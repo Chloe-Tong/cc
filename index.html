@@ -3,23 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="application-name" content="Polaris" />
-    <meta name="description" content="Polaris 是一个能和 AI 对话，也会陪你一起长出样子的房间。" />
+    <meta name="application-name" content="Ferry" />
+    <meta name="description" content="Ferry 渡口 — 一个能和 AI 对话的房间。" />
     <meta name="theme-color" content="#ffffff" />
-    <meta property="og:site_name" content="Polaris" />
-    <meta property="og:title" content="Polaris" />
-    <meta property="og:description" content="一个能和 AI 对话，也会陪你一起长出样子的房间。" />
+    <meta property="og:site_name" content="Ferry" />
+    <meta property="og:title" content="Ferry" />
+    <meta property="og:description" content="Ferry 渡口 — 一个能和 AI 对话的房间。" />
     <meta property="og:type" content="website" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
-    <meta property="og:image:alt" content="Polaris 北极星图标" />
+    <meta property="og:image:alt" content="Ferry 渡口" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Polaris" />
-    <meta name="twitter:description" content="一个能和 AI 对话，也会陪你一起长出样子的房间。" />
+    <meta name="twitter:title" content="Ferry" />
+    <meta name="twitter:description" content="Ferry 渡口 — 一个能和 AI 对话的房间。" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Polaris" />
+    <meta name="apple-mobile-web-app-title" content="Ferry" />
     <script>
       (() => {
         const storageKey = 'polaris-appearance-preference';
@@ -145,14 +145,39 @@
         0%, 100% { transform: scale(0.78); opacity: 0.42; }
         48% { transform: scale(1.18); opacity: 0.78; }
       }
+
+      #ferry-splash {
+        font-family: 'Great Vibes', cursive;
+        position: fixed;
+        top: calc(50% + 40px);
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 2.4rem;
+        color: transparent;
+        background: var(--polaris-boot-star);
+        -webkit-background-clip: text;
+        background-clip: text;
+        pointer-events: none;
+        white-space: nowrap;
+        opacity: 0.9;
+        transition: opacity 0.4s;
+      }
+
+      body:has(#root:not(:empty)) #ferry-splash {
+        opacity: 0;
+      }
     </style>
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icons/polaris-icon-192.png" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <title>Polaris</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet" />
+    <title>Ferry</title>
   </head>
   <body>
     <div id="root"></div>
+    <div id="ferry-splash">Ferry</div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
