@@ -2,8 +2,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 import { KeyboardResize } from '@capacitor/keyboard';
 
 const config: CapacitorConfig = {
-  appId: 'com.chloe.aiapp',
-  appName: 'AI Chat',
+  appId: 'com.chloe.dukou',
+  appName: '渡口',
   webDir: 'dist',
   server: {
     iosScheme: 'http',
