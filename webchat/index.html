@@ -447,7 +447,7 @@ function renderChat(){
   }
 
   for(const msg of msgs){
-    const d=fmtDate(msg.timestamp);
+    const d=fmtDate(msg.ts);
     if(d&&d!==lastDate){flushTasks();groups.push({type:'sep',label:d});lastDate=d;lastRole=null;lastGroup=null;}
     if(msg.role==='task'){taskBuf.push(msg);}
     else{
@@ -483,29 +483,19 @@ function renderChat(){
       for(let i=0;i<g.bubbles.length;i++){
         const msg=g.bubbles[i];
         const isLast=i===g.bubbles.length-1;
-        const starred=favIds.has(msg.id);
-
-        let thinkHtml='';
-        if(!isU&&msg.thinking){
-          const prev=msg.thinking.slice(0,45);
-          thinkHtml=`<div class="think-chip" onclick="this.classList.toggle('open')">
-            <div class="think-hdr">💭 <span style="font-weight:normal;color:#5a5248">${esc(prev)}${msg.thinking.length>45?'…':''}</span></div>
-            <div class="think-body">${esc(msg.thinking)}</div>
-          </div>`;
-        }
+        const starred=favIds.has(msg.ts);
 
         bubblesHtml+=`
           <div class="bubble-wrap">
-            ${!isU&&msg.thinking?thinkHtml:''}
             <div class="bubble ${g.role}">${renderSegs(msg.text||'')}</div>
             <div class="bact">
-              <button class="bab${starred?' on':''}" onclick="toggleFav('${ea(msg.id)}','${ea(msg.text)}','${g.role}','${ea(msg.timestamp||'')}',this)" title="${starred?'取消收藏':'收藏'}">${starred?'★':'☆'}</button>
+              <button class="bab${starred?' on':''}" onclick="toggleFav('${ea(msg.ts)}','${ea(msg.text)}','${g.role}',this)" title="${starred?'取消收藏':'收藏'}">${starred?'★':'☆'}</button>
               <button class="bab" onclick="cpTxt('${ea(msg.text)}')" title="复制">⎘</button>
             </div>
           </div>`;
       }
       const lastMsg=g.bubbles[g.bubbles.length-1];
-      bubblesHtml+=`<div class="bts">${fmtTs(lastMsg.timestamp)}</div>`;
+      bubblesHtml+=`<div class="bts">${fmtTs(lastMsg.ts)}</div>`;
 
       html+=`<div class="msg-group ${g.role}">${avHtml}<div class="bubbles">${bubblesHtml}</div></div>`;
     }
@@ -522,15 +512,18 @@ async function pollChat(){
     const since=lastTs?`&since=${encodeURIComponent(lastTs)}`:'';
     try{
       const data=await api(`/chat/poll?limit=50${since}`);
-      if(Array.isArray(data))newMsgs=data;
-      else{newMsgs=data.messages||[];statusData=data.status;}
+      newMsgs=data.chat?.new_records||[];
+      statusData=data.status||null;
     }catch(_){
-      try{newMsgs=await api(`/chat/history?limit=100${since}`);}catch(_2){}
+      try{
+        const data=await api(`/chat/history?limit=100${since?since.replace('&','?'):''}`);
+        newMsgs=data.records||[];
+      }catch(_2){}
     }
     if(!statusData){try{statusData=await api('/chat/status');}catch(_){}}
 
     const wasThink=isThink;
-    isThink=!!(statusData?.typing||statusData?.thinking||statusData?.status==='thinking');
+    isThink=!!(statusData?.is_typing||statusData?.status==='typing'||statusData?.status==='thinking');
     const thinkBar=document.getElementById('think-bar');
     const dot=document.getElementById('dot');
     if(isThink){
@@ -541,18 +534,14 @@ async function pollChat(){
     }
 
     if(newMsgs.length){
-      const ids=new Set(msgs.map(m=>m.id));
+      const tss=new Set(msgs.map(m=>m.ts));
       let changed=!lastTs;
       for(const m of newMsgs){
-        if(!ids.has(m.id)){msgs.push(m);ids.add(m.id);changed=true;}
-        if(m.isFavorited)favIds.add(m.id);
+        if(!tss.has(m.ts)){msgs.push(m);tss.add(m.ts);changed=true;}
       }
-      msgs.sort((a,b)=>{
-        const ta=new Date(a.timestamp||0).getTime(),tb=new Date(b.timestamp||0).getTime();
-        return ta-tb||(a.id>b.id?1:-1);
-      });
+      msgs.sort((a,b)=>(a.ts||'').localeCompare(b.ts||''));
       const last=msgs[msgs.length-1];
-      if(last?.timestamp)lastTs=last.timestamp;
+      if(last?.ts)lastTs=last.ts;
       if(changed)renderChat();
     }
 
@@ -572,13 +561,13 @@ async function sendChat(){
   if(!text||sendBtn.disabled)return;
   if(text.startsWith('/')){chatInp.value='';autoResize();document.getElementById('slash-pop').classList.remove('on');await handleSlash(text);return;}
   chatInp.value='';autoResize();sendBtn.disabled=true;
-  const local={id:'local-'+Date.now(),role:'user',text,timestamp:new Date().toISOString()};
+  const local={ts:'local-'+Date.now(),role:'user',text};
   msgs.push(local);renderChat();scrollBot(true);
   try{
     await api('/chat/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
   }catch(e){
     toast('发送失败: '+e.message);
-    msgs=msgs.filter(m=>m.id!==local.id);renderChat();
+    msgs=msgs.filter(m=>m.ts!==local.ts);renderChat();
   }finally{sendBtn.disabled=false;chatInp.focus();}
 }
 
@@ -638,14 +627,20 @@ sendBtn.addEventListener('click',sendChat);
 function cpTxt(t){navigator.clipboard.writeText(t.replace(/\\n/g,'\n')).then(()=>toast('已复制'));}
 
 // ── Favorites ─────────────────────────────────────────────────────────────
-async function toggleFav(id,text,role,ts,btn){
-  const on=favIds.has(id);
+// favIds maps msg.ts → fav record id
+const favMap=new Map(); // ts → fav id
+async function toggleFav(msgTs,text,role,btn){
+  const on=favIds.has(msgTs);
   try{
-    if(on){await api('/chat/favorites/'+id,{method:'DELETE'});favIds.delete(id);btn.textContent='☆';btn.classList.remove('on');toast('已取消收藏');}
-    else{
-      await api('/chat/favorites',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({refs:[{id,role,text:text.replace(/\\n/g,'\n'),ts,type:'text'}],type:'text'})});
-      favIds.add(id);btn.textContent='★';btn.classList.add('on');toast('已收藏');
+    if(on){
+      const favId=favMap.get(msgTs)||msgTs;
+      await api('/favorites/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:favId})});
+      favIds.delete(msgTs);favMap.delete(msgTs);btn.textContent='☆';btn.classList.remove('on');toast('已取消收藏');
+    }else{
+      const res=await api('/favorites/add',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({type:'text',source:'web',refs:[{ts:msgTs,role,text:text.replace(/\\n/g,'\n'),type:'text'}]})});
+      const newId=res?.record?.id||msgTs;
+      favIds.add(msgTs);favMap.set(msgTs,newId);btn.textContent='★';btn.classList.add('on');toast('已收藏');
     }
   }catch(e){toast('失败: '+e.message);}
 }
@@ -653,8 +648,8 @@ async function loadFavs(){
   const el=document.getElementById('fav-list');
   el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><div>加载中…</div></div>';
   try{
-    const data=await api('/chat/favorites');
-    favs=Array.isArray(data)?data:(data.favorites||data.items||[]);
+    const data=await api('/favorites/list?limit=200');
+    favs=data.records||[];
     renderFavs();
   }catch(e){el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><div>加载失败</div></div>';}
 }
@@ -662,21 +657,26 @@ function renderFavs(){
   const el=document.getElementById('fav-list');
   if(!favs.length){el.innerHTML='<div class="empty"><div class="empty-ico">⭐</div><div>还没有收藏</div></div>';return;}
   el.innerHTML=favs.map(f=>{
-    const isCc=f.role!=='user';
-    const ts=fmtTs(f.ts||f.timestamp||f.created_at);
-    const txt=(f.text||'').slice(0,500);
+    const ref=(f.refs||[])[0]||{};
+    const isCc=ref.role!=='user';
+    const ts=fmtTs(f.created_at||ref.ts);
+    const txt=(ref.text||'').slice(0,500);
     return`<div class="fav-card">
       <div style="flex:1">
         <div class="fav-meta"><span class="fav-role ${isCc?'cc':'me'}">${isCc?'Cc':'我'}</span>${ts}</div>
-        <div class="fav-txt">${esc(txt)}${(f.text||'').length>500?'…':''}</div>
+        <div class="fav-txt">${esc(txt)}${(ref.text||'').length>500?'…':''}</div>
       </div>
       <button class="fav-del" onclick="delFav('${ea(f.id)}',this)">✕</button>
     </div>`;
   }).join('');
 }
 async function delFav(id,btn){
-  try{await api('/chat/favorites/'+id,{method:'DELETE'});favs=favs.filter(f=>f.id!==id);favIds.delete(id);renderFavs();toast('已删除');}
-  catch(e){toast('删除失败');}
+  try{
+    await api('/favorites/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+    favs=favs.filter(f=>f.id!==id);
+    for(const[ts,fid]of favMap)if(fid===id){favIds.delete(ts);favMap.delete(ts);}
+    renderFavs();toast('已删除');
+  }catch(e){toast('删除失败');}
 }
 
 // ── Terminal ──────────────────────────────────────────────────────────────
