@@ -269,7 +269,12 @@ code{font-family:'SF Mono','Fira Code',monospace;font-size:.88em;background:rgba
 
 <script>
 // ── Config ───────────────────────────────────────────────────────────────
-const TOKEN = new URLSearchParams(location.search).get('token') || '';
+// AUTH_TOKEN injected by push.py _serve_web_chat() → highest priority
+const _injected = typeof AUTH_TOKEN !== 'undefined' ? AUTH_TOKEN : '';
+const _urlToken  = new URLSearchParams(location.search).get('token') || '';
+const _stored    = localStorage.getItem('cc_token') || '';
+const TOKEN = _injected || _urlToken || _stored;
+if (TOKEN) localStorage.setItem('cc_token', TOKEN);
 const BASE  = location.origin;
 
 // ── State ────────────────────────────────────────────────────────────────
