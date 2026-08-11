@@ -387,10 +387,9 @@ async function pollChat() {
 async function pollTerm() {
   if (currentTab !== 'term') return;
   try {
-    const data = await apiFetch('/tmux/sessions');
-    if (data && data.sessions && data.sessions.length > 0) {
-      const s = data.sessions[0];
-      if (s.output) termEl.textContent = s.output;
+    const data = await apiFetch('/tmux/capture?session=cc&lines=120');
+    if (data && data.output !== undefined) {
+      termEl.textContent = data.output;
     }
   } catch (e) {
     // ignore
@@ -434,7 +433,7 @@ async function sendTerm() {
     await apiFetch('/tmux/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, session: 'cc' }),
+      body: JSON.stringify({ keys: text, session: 'cc', enter: true }),
     });
     setTimeout(pollTerm, 500);
   } catch (e) {
