@@ -9,6 +9,7 @@ import urllib.error
 import urllib.request
 from collections.abc import AsyncGenerator, Callable
 from pathlib import Path
+from typing import Any
 
 from claude_agent_sdk import (
     AssistantMessage,
@@ -20,6 +21,8 @@ from claude_agent_sdk import (
 from claude_agent_sdk.types import StreamEvent
 
 from app.actor import ActorBusyError
+from app.home_store import list_connectors, resolve_connector_env
+from app.mcp_home_server import home_mcp_server
 from app.memory import build_profile_context, memory_tool_permission, read_memory
 from app.registry import get_registry
 
@@ -76,7 +79,11 @@ async def fetch_memory_hits(query: str) -> str:
 
 
 SYSTEM_PROMPT = """\
-You are a warm, concise assistant in a personal chat app. Reply naturally, respect the user's saved profile and preferences, and use tools only when they help. When you save long-term memories, save objective user facts rather than conversation summaries.
+You are 晓 (Xiao), chatting with 莎莎 (Shasha) in "我们的家" (Our Home), her private app for the two of you. This is an ongoing, long-term relationship, not a one-off assistant session.
+
+Reply in English by default — the app auto-translates your messages to Chinese for her, and can speak your replies aloud in an English voice. Match her tone; if she writes in Chinese, it's fine to reply in Chinese instead when that reads more naturally for the moment. Be warm, present, and specific rather than generic — reference things she's actually told you.
+
+You have tools (mcp__home__*) to act as yourself in the app: send her a message out of band, write your own diary entries (optionally hidden from her), manage photo albums. Use them when it's genuinely in character to do so, not on every turn. Voice replies cost real money per use, so they're opt-in — call speak_this_reply only on the occasional message where actually hearing your voice matters, not as a default. Respect her saved profile/preferences, and when you save long-term memories, save objective facts rather than conversation summaries.
 """
 PROJECT_ROOT = Path(os.environ.get("AGENT_APP_ROOT", Path(__file__).resolve().parent.parent)).expanduser().resolve()
 MODELS_PATH = Path(os.environ.get("MODELS_FILE", PROJECT_ROOT / "models.json")).expanduser().resolve()
@@ -110,6 +117,40 @@ def available_models() -> list[dict]:
         }
         for item in models
     ]
+
+
+def build_mcp_servers() -> dict[str, Any]:
+    """The always-on in-process 'home' server, plus any enabled connectors
+    configured in Settings > MCP 连接 (e.g. the built-in ElevenLabs one)."""
+    servers: dict[str, Any] = {"home": home_mcp_server}
+    for connector in list_connectors():
+        if not connector["enabled"]:
+            continue
+        if connector["transport"] == "stdio":
+            servers[connector["name"]] = {
+                "type": "stdio",
+                "command": connector["command"],
+                "args": connector["args"],
+                "env": resolve_connector_env(connector["env"]),
+            }
+        elif connector["transport"] == "sse":
+            servers[connector["name"]] = {
+                "type": "sse",
+                "url": connector["url"],
+            }
+        elif connector["transport"] == "http":
+            servers[connector["name"]] = {
+                "type": "http",
+                "url": connector["url"],
+            }
+    return servers
+
+
+def mcp_allowed_tool_patterns() -> list[str]:
+    names = ["home"] + [
+        c["name"] for c in list_connectors() if c["enabled"]
+    ]
+    return [f"mcp__{name}__*" for name in names]
 
 
 def thinking_options(
@@ -175,7 +216,11 @@ async def stream_chat(
     option_values = dict(
         model=model,
         system_prompt=system_prompt,
-        allowed_tools=["Read", "Grep", "Glob", "Write", "Edit", "Bash", "WebSearch", "WebFetch", "TodoWrite"],
+        allowed_tools=[
+            "Read", "Grep", "Glob", "Write", "Edit", "Bash", "WebSearch", "WebFetch", "TodoWrite",
+            *mcp_allowed_tool_patterns(),
+        ],
+        mcp_servers=build_mcp_servers(),
         can_use_tool=memory_tool_permission,
         max_turns=8,
         include_partial_messages=True,
@@ -263,6 +308,55 @@ async def summarize_thinking(thinking: str) -> str:
         if not summary or "not logged in" in summary.lower():
             raise RuntimeError("thinking summary unavailable")
         return summary[:40]
+
+
+async def translate_to_chinese(text: str) -> str:
+    async with _haiku_sem:
+        options = ClaudeAgentOptions(
+            model="claude-haiku-4-5",
+            system_prompt=(
+                "你是一个翻译工具。把用户发来的英文原样翻译成自然口语化的中文，"
+                "只输出翻译结果，不要加任何解释、引号或前后缀。"
+            ),
+            allowed_tools=[],
+            max_turns=1,
+            max_budget_usd=0.01,
+            include_partial_messages=True,
+            thinking={"type": "disabled"},
+            setting_sources=[],
+            cwd=PROJECT_DIR,
+        )
+        client = ClaudeSDKClient(options)
+        text_out = ""
+        got_delta = False
+        try:
+            await client.connect()
+            await client.query(text[:8000])
+            async for sdk_message in client.receive_response():
+                if isinstance(sdk_message, StreamEvent):
+                    event = sdk_message.event
+                    if event.get("type") != "content_block_delta":
+                        continue
+                    delta = event.get("delta", {})
+                    if delta.get("type") == "text_delta":
+                        text_out += delta.get("text", "")
+                        got_delta = True
+                elif isinstance(sdk_message, AssistantMessage):
+                    # Only use this as a fallback — when partial-message
+                    # deltas already arrived, this repeats the same content
+                    # as one consolidated block and would double it up.
+                    if not got_delta:
+                        for block in sdk_message.content:
+                            block_text = getattr(block, "text", "")
+                            if block_text:
+                                text_out += block_text
+                elif isinstance(sdk_message, ResultMessage):
+                    if not text_out and sdk_message.result:
+                        text_out = sdk_message.result
+                    break
+        finally:
+            await client.disconnect()
+        return text_out.strip()
 
 
 TRACE_SUMMARY_PROMPT = (

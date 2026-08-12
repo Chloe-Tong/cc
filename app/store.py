@@ -112,6 +112,23 @@ def initialize_store() -> None:
                 ADD COLUMN edited INTEGER NOT NULL DEFAULT 0
                 """
             )
+        if "audio_path" not in message_columns:
+            db.execute("ALTER TABLE messages ADD COLUMN audio_path TEXT")
+        if "audio_translation" not in message_columns:
+            db.execute("ALTER TABLE messages ADD COLUMN audio_translation TEXT")
+        if "audio_lang" not in message_columns:
+            db.execute("ALTER TABLE messages ADD COLUMN audio_lang TEXT")
+        conv_columns = {
+            row["name"]
+            for row in db.execute("PRAGMA table_info(conversations)").fetchall()
+        }
+        if "rollover_after_id" not in conv_columns:
+            db.execute(
+                """
+                ALTER TABLE conversations
+                ADD COLUMN rollover_after_id INTEGER NOT NULL DEFAULT 0
+                """
+            )
         branch_columns = {
             row["name"]
             for row in db.execute("PRAGMA table_info(message_branches)").fetchall()
@@ -731,6 +748,7 @@ def conversation_messages(
                 f"""
                 SELECT m.id, m.role, m.text, m.thinking, m.attachments_json,
                        m.traces_json, m.edited, m.timestamp,
+                       m.audio_path, m.audio_translation, m.audio_lang,
                        (
                            SELECT COUNT(*)
                            FROM message_branches b
@@ -753,6 +771,7 @@ def conversation_messages(
                 """
                 SELECT m.id, m.role, m.text, m.thinking, m.attachments_json,
                        m.traces_json, m.edited, m.timestamp,
+                       m.audio_path, m.audio_translation, m.audio_lang,
                        (
                            SELECT COUNT(*)
                            FROM message_branches b
@@ -811,3 +830,146 @@ def delete_conversation(conv_id: str) -> None:
             delete_session(session_id, directory=PROJECT_DIR)
         except Exception:
             pass
+
+
+def set_message_audio(
+    message_id: int,
+    audio_path: str | None = None,
+    audio_translation: str | None = None,
+    audio_lang: str | None = None,
+) -> None:
+    with _connect() as db:
+        db.execute(
+            """
+            UPDATE messages
+            SET audio_path = COALESCE(?, audio_path),
+                audio_translation = COALESCE(?, audio_translation),
+                audio_lang = COALESCE(?, audio_lang)
+            WHERE id = ?
+            """,
+            (audio_path, audio_translation, audio_lang, message_id),
+        )
+
+
+def append_assistant_message(conv_id: str, text: str) -> int:
+    """Insert an assistant message outside the normal turn loop.
+
+    Used by the home MCP server's send_message tool, so 晓 can message 莎莎
+    proactively (e.g. from an external agent run) without going through the
+    /api/chat streaming turn.
+    """
+    resolved = resolve_conversation(conv_id)
+    if not resolved:
+        raise ConversationNotFound("conversation not found")
+    now = _now()
+    with _connect() as db:
+        cursor = db.execute(
+            """
+            INSERT INTO messages(conv_id, role, text, thinking, timestamp)
+            VALUES (?, 'assistant', ?, '', ?)
+            """,
+            (resolved, text, now),
+        )
+        db.execute(
+            "UPDATE conversations SET updated_at = ? WHERE conv_id = ?",
+            (now, resolved),
+        )
+        return int(cursor.lastrowid)
+
+
+def primary_conversation_id() -> str:
+    """The single perpetual '我们的家' conversation thread.
+
+    Remembers its choice in store_meta so it stays stable across restarts.
+    Adopts the most recently active existing conversation the first time
+    this runs (so pre-existing chat history becomes the home thread),
+    otherwise creates a fresh one.
+    """
+    with _connect() as db:
+        row = db.execute(
+            "SELECT value FROM store_meta WHERE key = 'primary_conv_id'"
+        ).fetchone()
+        if row:
+            exists = db.execute(
+                "SELECT 1 FROM conversations WHERE conv_id = ?",
+                (row["value"],),
+            ).fetchone()
+            if exists:
+                return row["value"]
+        candidate = db.execute(
+            "SELECT conv_id FROM conversations ORDER BY updated_at DESC LIMIT 1"
+        ).fetchone()
+        if candidate:
+            conv_id = candidate["conv_id"]
+        else:
+            conv_id = str(uuid.uuid4())
+            now = _now()
+            db.execute(
+                """
+                INSERT INTO conversations
+                    (conv_id, title, starred, created_at, updated_at)
+                VALUES (?, '我们的家', 0, ?, ?)
+                """,
+                (conv_id, now, now),
+            )
+        db.execute(
+            """
+            INSERT OR REPLACE INTO store_meta(key, value)
+            VALUES ('primary_conv_id', ?)
+            """,
+            (conv_id,),
+        )
+        return conv_id
+
+
+ROLLOVER_CHAR_THRESHOLD = 120_000
+
+
+def should_rollover(conv_id: str) -> bool:
+    with _connect() as db:
+        row = db.execute(
+            "SELECT rollover_after_id FROM conversations WHERE conv_id = ?",
+            (conv_id,),
+        ).fetchone()
+        if not row:
+            return False
+        after_id = row["rollover_after_id"]
+        total = db.execute(
+            """
+            SELECT COALESCE(SUM(LENGTH(text) + LENGTH(thinking)), 0) AS chars
+            FROM messages
+            WHERE conv_id = ? AND id > ?
+            """,
+            (conv_id, after_id),
+        ).fetchone()["chars"]
+        return total >= ROLLOVER_CHAR_THRESHOLD
+
+
+def mark_rollover(conv_id: str) -> None:
+    with _connect() as db:
+        latest = db.execute(
+            "SELECT MAX(id) AS max_id FROM messages WHERE conv_id = ?",
+            (conv_id,),
+        ).fetchone()["max_id"]
+        db.execute(
+            "UPDATE conversations SET rollover_after_id = ? WHERE conv_id = ?",
+            (latest or 0, conv_id),
+        )
+
+
+def recent_messages(conv_id: str, limit: int = 20) -> list[dict[str, Any]]:
+    with _connect() as db:
+        rows = db.execute(
+            """
+            SELECT m.id, m.role, m.text, m.thinking, m.attachments_json,
+                   m.traces_json, m.edited, m.timestamp,
+                   m.audio_path, m.audio_translation, m.audio_lang,
+                   0 AS branch_count
+            FROM messages m
+            WHERE m.conv_id = ?
+            ORDER BY m.id DESC
+            LIMIT ?
+            """,
+            (conv_id, limit),
+        ).fetchall()
+    return list(reversed(_rows_to_messages(rows)))

@@ -255,6 +255,67 @@ body.sidebar-action-open .rename-dialog input{-webkit-user-select:text;user-sele
   body{background:var(--claude-sidebar-bg)}
   .topbar{padding-left:max(env(safe-area-inset-left),var(--topbar-side-inset));padding-right:max(env(safe-area-inset-right),var(--topbar-side-inset))}
 }
+
+/* ---- 我们的家: 语音消息 ---- */
+#micButton.recording{color:#fff;background:#e0554f;animation:mic-pulse 1.2s ease-in-out infinite}
+#voiceReplyToggle{font-size:15px;opacity:.4}
+#voiceReplyToggle.active{opacity:1;background:var(--bg-sunken)}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,85,79,.4)}50%{box-shadow:0 0 0 8px rgba(224,85,79,0)}}
+.voice-extra{margin-top:var(--space-2);display:flex;flex-direction:column;gap:6px}
+.voice-extra audio{width:100%;max-width:260px;height:34px}
+.voice-translation{font-size:var(--text-sm);color:var(--text-secondary);line-height:1.4;padding:2px 0}
+
+/* ---- 我们的家: 日记 ---- */
+.diary-entry{position:relative;padding:12px 14px}
+.diary-entry-meta{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;color:var(--text-faint)}
+.diary-author-tag{padding:1px 8px;border-radius:999px;background:var(--bg-sunken);font-weight:500}
+.diary-author-tag.xiao{background:#EDE3FF;color:#6B4FBB}
+.diary-author-tag.shasha{background:#FFE3EC;color:#C24473}
+.diary-hidden-badge{color:var(--text-faint)}
+.diary-compose-bar{display:flex;gap:8px;padding:10px 14px}
+.diary-compose-bar textarea{flex:1;min-height:40px;max-height:120px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary);resize:vertical;font-size:15px}
+.diary-compose-actions{display:flex;flex-direction:column;gap:6px;justify-content:flex-end}
+.diary-hide-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary)}
+.diary-send-btn{padding:8px 14px;border-radius:var(--radius-full);background:var(--accent);color:var(--accent-fg);font-size:14px;white-space:nowrap}
+
+/* ---- 我们的家: 照片 ---- */
+.albums-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:14px}
+.album-card{position:relative;border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-sunken);aspect-ratio:1;display:flex;align-items:flex-end;cursor:pointer}
+.album-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.album-card-label{position:relative;z-index:1;width:100%;padding:8px 10px;background:linear-gradient(to top,rgba(0,0,0,.55),transparent);color:#fff;font-size:13px}
+.album-card-count{opacity:.8;font-size:11px}
+.album-card.private::before{content:'🔒';position:absolute;top:8px;right:8px;z-index:2;font-size:14px}
+.album-empty-icon{margin:auto;opacity:.35;font-size:28px}
+.photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;padding:14px}
+.photo-card{position:relative;border-radius:var(--radius-md);overflow:hidden;aspect-ratio:1;background:var(--bg-sunken)}
+.photo-card img{width:100%;height:100%;object-fit:cover}
+.photo-card-actions{position:absolute;top:4px;right:4px;display:flex;gap:4px}
+.photo-card-actions button{width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:12px;display:grid;place-items:center}
+.photos-toolbar,.albums-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+.upload-photo-btn,.new-album-btn{padding:7px 14px;border-radius:var(--radius-full);background:var(--bg-sunken);font-size:13px}
+
+/* ---- 我们的家: 设置 - MCP连接 / 换肤 ---- */
+.connector-list{display:flex;flex-direction:column;gap:10px;padding:14px}
+.connector-card{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary)}
+.connector-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.connector-name{font-weight:600;font-size:15px}
+.connector-badge{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--bg-sunken);color:var(--text-secondary)}
+.connector-meta{font-size:12px;color:var(--text-faint);margin-top:3px}
+.connector-actions{display:flex;gap:10px;margin-top:8px}
+.connector-actions button{font-size:13px;color:var(--text-secondary)}
+.connector-form{display:flex;flex-direction:column;gap:8px;padding:14px}
+.connector-form input,.connector-form select,.connector-form textarea{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-primary);font-size:14px}
+.theme-swatch-row{display:flex;gap:10px;padding:14px;flex-wrap:wrap}
+.theme-swatch{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.theme-swatch.active{border-color:var(--text-primary)}
+
+/* ---- 我们的家: 占位模块 ---- */
+.placeholder-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:14px}
+.placeholder-card{padding:20px 14px;border-radius:var(--radius-lg);background:var(--bg-sunken);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.placeholder-card-icon{font-size:26px}
+.placeholder-card-title{font-size:14px;font-weight:500}
+.placeholder-card-sub{font-size:11px;color:var(--text-faint)}
+.placeholder-card.locked .placeholder-card-icon{filter:grayscale(1)}
 </style>
 <link rel="stylesheet" href="/static/design-system.css">
 <script src="/marked.min.js?v=2"></script>
@@ -306,6 +367,7 @@ body.sidebar-action-open .rename-dialog input{-webkit-user-select:text;user-sele
         <div class="composer-actions">
           <button class="composer-icon" id="attachButton" aria-label="添加文件"></button>
           <span class="composer-spacer"></span>
+          <button class="composer-icon" id="voiceReplyToggle" aria-label="请求语音回复">🔊</button>
           <button class="composer-icon" id="micButton" aria-label="麦克风"></button>
           <button id="send" aria-label="语音"></button>
         </div>
@@ -323,7 +385,8 @@ body.sidebar-action-open .rename-dialog input{-webkit-user-select:text;user-sele
       <button class="mobile-sidebar-nav-item" type="button"><span class="mobile-sidebar-nav-icon" data-icon="projects"></span><span>Projects</span></button>
       <button class="mobile-sidebar-nav-item" type="button"><span class="mobile-sidebar-nav-icon" data-icon="artifacts"></span><span>Artifacts</span></button>
       <button class="mobile-sidebar-nav-item" id="openMemory"><span class="mobile-sidebar-nav-icon" data-icon="memory"></span><span>Memory</span></button>
-      <button class="mobile-sidebar-nav-item" id="openDiary"><span class="mobile-sidebar-nav-icon" data-icon="diary"></span><span>Diary</span></button>
+      <button class="mobile-sidebar-nav-item" id="openDiary"><span class="mobile-sidebar-nav-icon" data-icon="diary"></span><span>日记</span></button>
+      <button class="mobile-sidebar-nav-item" id="openPhotos"><span class="mobile-sidebar-nav-icon" data-icon="diary"></span><span>照片</span></button>
     </nav>
     <div class="mobile-sidebar-section-title">Recents</div>
     <div class="drawer-list" id="sessionList"></div>
@@ -380,7 +443,62 @@ body.sidebar-action-open .rename-dialog input{-webkit-user-select:text;user-sele
       <button class="profile-nav-row" id="openSavedMemories"><span class="profile-nav-row-icon" data-profile-icon="memory"></span><span class="profile-nav-row-title">Saved memories<span class="profile-nav-row-note" id="savedMemoriesCount">0 enabled</span></span><span class="profile-nav-chevron">›</span></button>
       <button class="profile-nav-row" id="openPreferences"><span class="profile-nav-row-icon" data-profile-icon="pencil"></span><span class="profile-nav-row-title">Preferences<span class="profile-nav-row-note" id="preferencesSummary">No custom instructions</span></span><span class="profile-nav-chevron">›</span></button>
     </section>
+    <section class="profile-section">
+      <div class="profile-section-title">我们的家</div>
+      <button class="profile-nav-row" id="openConnectors"><span class="profile-nav-row-title">MCP 连接<span class="profile-nav-row-note" id="connectorsSummary">管理语音等外部工具</span></span><span class="profile-nav-chevron">›</span></button>
+      <button class="profile-nav-row" id="openTheme"><span class="profile-nav-row-title">换肤<span class="profile-nav-row-note">主题色</span></span><span class="profile-nav-chevron">›</span></button>
+      <button class="profile-nav-row" id="openMore"><span class="profile-nav-row-title">更多<span class="profile-nav-row-note">纪念日 · 清单 · 私人空间…</span></span><span class="profile-nav-chevron">›</span></button>
+    </section>
     <div class="profile-footer-actions"><button class="profile-text-button" id="deleteProfile">Clear profile</button></div>
+  </div>
+  <div class="profile-page" id="connectorsPage">
+    <header class="profile-header">
+      <button class="profile-back-button" id="profileBackFromConnectors" aria-label="Back"></button>
+      <div class="profile-title">MCP 连接</div>
+      <span></span>
+    </header>
+    <p class="profile-help-text">晓在聊天里能用到的外部工具（比如 ElevenLabs 语音）。改动会在下一轮对话生效。</p>
+    <div class="connector-list" id="connectorList"></div>
+    <button class="profile-add-button" id="addConnector">＋ 新建连接</button>
+    <div style="height:calc(46px + env(safe-area-inset-bottom) + 32px)"></div>
+  </div>
+  <div class="profile-page" id="connectorFormPage">
+    <header class="profile-header">
+      <button class="profile-back-button" id="connectorFormBack" aria-label="Back"></button>
+      <div class="profile-title" id="connectorFormTitle">新建连接</div>
+      <button class="profile-save-button" id="connectorFormSave" aria-label="Save">✓</button>
+    </header>
+    <div class="connector-form">
+      <input id="connectorFormName" placeholder="名称，比如 elevenlabs">
+      <select id="connectorFormTransport">
+        <option value="stdio">stdio（本地命令）</option>
+        <option value="sse">sse（远程 URL）</option>
+        <option value="http">http（远程 URL）</option>
+      </select>
+      <input id="connectorFormCommand" placeholder="命令，比如 uvx（仅 stdio 需要）">
+      <input id="connectorFormArgs" placeholder="参数，逗号分隔，比如 elevenlabs-mcp">
+      <input id="connectorFormUrl" placeholder="URL（仅 sse/http 需要）">
+      <textarea id="connectorFormEnv" rows="3" placeholder="环境变量，每行一个 KEY=VALUE"></textarea>
+      <label class="diary-hide-toggle"><input type="checkbox" id="connectorFormEnabled" checked> 启用</label>
+    </div>
+    <div style="height:calc(46px + env(safe-area-inset-bottom) + 32px)"></div>
+  </div>
+  <div class="profile-page" id="themePage">
+    <header class="profile-header">
+      <button class="profile-back-button" id="profileBackFromTheme" aria-label="Back"></button>
+      <div class="profile-title">换肤</div>
+      <span></span>
+    </header>
+    <p class="profile-help-text">选一个主题色。以后要整体换皮（字体/人物设定）会加在这里。</p>
+    <div class="theme-swatch-row" id="themeSwatchRow"></div>
+  </div>
+  <div class="profile-page" id="morePage">
+    <header class="profile-header">
+      <button class="profile-back-button" id="profileBackFromMore" aria-label="Back"></button>
+      <div class="profile-title">更多</div>
+      <span></span>
+    </header>
+    <div class="placeholder-grid" id="placeholderGrid"></div>
   </div>
   <div class="profile-page" id="savedMemoriesPage">
     <header class="profile-header">
@@ -412,12 +530,29 @@ body.sidebar-action-open .rename-dialog input{-webkit-user-select:text;user-sele
 <section id="diaryPanel" aria-hidden="true">
   <header class="profile-header" style="padding:calc(env(safe-area-inset-top) + 18px) 18px 0;flex:none">
     <button class="profile-round-button" id="closeDiary" aria-label="Close diary">×</button>
-    <div class="profile-title">Diary</div>
+    <div class="profile-title">日记</div>
     <span></span>
   </header>
   <div class="diary-months" id="diaryMonths"></div>
   <div class="diary-content" id="diaryContent"></div>
+  <div class="diary-compose-bar" id="diaryComposeBar">
+    <textarea id="diaryComposeInput" placeholder="写今天的日记…" rows="1"></textarea>
+    <div class="diary-compose-actions"><button class="diary-send-btn" id="diarySendBtn">发布</button></div>
+  </div>
   <div class="diary-search-bar" id="diarySearchBar"><div class="diary-search-bubble"><span class="diary-search-icon"></span><input class="diary-search-input" id="diarySearchInput" type="text" placeholder="Search" autocomplete="off" autocorrect="off" spellcheck="false"><button class="diary-search-clear hidden" id="diarySearchClear" aria-label="Clear">×</button></div></div>
+</section>
+
+<section id="photosPanel" aria-hidden="true">
+  <header class="profile-header" style="padding:calc(env(safe-area-inset-top) + 18px) 18px 0;flex:none">
+    <button class="profile-round-button" id="closePhotos" aria-label="Close photos">×</button>
+    <div class="profile-title" id="photosTitle">照片</div>
+    <button class="profile-round-button hidden" id="photosBack" aria-label="Back">‹</button>
+  </header>
+  <div class="albums-toolbar hidden" id="albumsToolbar"><span></span><button class="new-album-btn" id="newAlbumBtn">＋ 新建相册</button></div>
+  <div class="albums-grid" id="albumsGrid"></div>
+  <div class="photos-toolbar hidden" id="photosToolbar"><span></span><button class="upload-photo-btn" id="uploadPhotoBtn">＋ 上传照片</button></div>
+  <div class="photos-grid hidden" id="photosGrid"></div>
+  <input type="file" id="photoFileInput" accept="image/*" class="hidden">
 </section>
 
 <div class="overlay" id="thoughtOverlay" aria-hidden="true" inert></div>
@@ -526,7 +661,40 @@ $('attachButton').onclick=()=>$('fileInput').click();
 $('fileInput').onchange=e=>addSelectedFiles([...e.target.files]);
 (()=>{const cb=document.querySelector('.composer-box');if(!cb)return;cb.addEventListener('dragover',e=>{if(!e.dataTransfer?.types?.includes('Files'))return;e.preventDefault();cb.classList.add('drag-over')});cb.addEventListener('dragleave',e=>{if(e.target===cb)cb.classList.remove('drag-over')});cb.addEventListener('drop',e=>{e.preventDefault();cb.classList.remove('drag-over');const files=[...(e.dataTransfer?.files||[])];if(files.length)addSelectedFiles(files)})})();
 $('input').addEventListener('paste',e=>{const items=e.clipboardData?.items;const files=e.clipboardData?.files;const collected=[];if(items){for(const it of items){if(it.kind==='file'){const f=it.getAsFile();if(!f)continue;if(it.type.startsWith('image/')){const ext=(it.type.split('/')[1]||'png').replace(/^jpeg$/,'jpg');collected.push(new File([f],`paste-${Date.now()}.${ext}`,{type:it.type}))}else{collected.push(f)}}}}if(!collected.length&&files?.length){for(const f of files)collected.push(f)}if(collected.length){e.preventDefault();addSelectedFiles(collected)}});
-$('micButton').onclick=()=>toast('语音功能开发中');
+let _requestVoice=false;
+$('voiceReplyToggle').onclick=()=>{_requestVoice=!_requestVoice;$('voiceReplyToggle').classList.toggle('active',_requestVoice);toast(_requestVoice?'下一条会请求晓语音回复':'已取消语音请求')};
+let _voiceRecorder=null,_voiceChunks=[],_voiceStream=null;
+async function startVoiceRecording(){
+  if(!navigator.mediaDevices?.getUserMedia){toast('这个浏览器不支持录音');return}
+  try{_voiceStream=await navigator.mediaDevices.getUserMedia({audio:true})}
+  catch(e){toast('无法访问麦克风');return}
+  _voiceChunks=[];
+  try{_voiceRecorder=new MediaRecorder(_voiceStream)}catch(e){toast('录音初始化失败');_voiceStream.getTracks().forEach(t=>t.stop());return}
+  _voiceRecorder.ondataavailable=e=>{if(e.data.size>0)_voiceChunks.push(e.data)};
+  _voiceRecorder.onstop=async()=>{
+    _voiceStream.getTracks().forEach(t=>t.stop());
+    $('micButton').classList.remove('recording');
+    const blob=new Blob(_voiceChunks,{type:_voiceRecorder.mimeType||'audio/webm'});
+    if(blob.size<500){toast('录音太短');return}
+    toast('转写中…');
+    try{
+      const fd=new FormData();fd.append('file',blob,'voice.webm');
+      const r=await api('/api/home/voice',{method:'POST',body:fd});
+      if(!r.ok)throw Error();
+      const data=await r.json();
+      if(!data.text){toast('没听清，请再试一次');return}
+      sendMessage(data.text,true,[],[],{voiceAudioPath:data.audio_path,voiceLang:'zh'});
+    }catch(e){toast('语音发送失败')}
+  };
+  _voiceRecorder.start();
+  $('micButton').classList.add('recording');
+}
+function stopVoiceRecording(){if(_voiceRecorder&&_voiceRecorder.state==='recording')_voiceRecorder.stop()}
+$('micButton').onclick=()=>{
+  if(state.busy){toast('晓还在回复中');return}
+  if(_voiceRecorder&&_voiceRecorder.state==='recording'){stopVoiceRecording();return}
+  startVoiceRecording();
+};
 
 function showChat(){document.body.classList.add('chat-ready');$('gate').classList.add('hidden');$('chat').classList.remove('hidden')}
 function showGate(){document.body.classList.remove('chat-ready');closeDrawer();$('chat').classList.add('hidden');$('gate').classList.remove('hidden')}
@@ -1319,6 +1487,16 @@ function _buildClaudeRow(text,userText='',thinking='',timestamp='',userAttachmen
   actions(row,text,userText,userAttachments);return row
 }
 function addClaude(text,userText='',thinking='',timestamp='',userAttachments=[],messageId=''){const row=_buildClaudeRow(text,userText,thinking,timestamp,userAttachments,[],messageId);streamInner.append(row);appendDisclaimer();return row}
+async function loadStoredAudio(audio,path){try{const r=await api(`/api/home/voice-file?path=${encodeURIComponent(path)}`);if(!r.ok)return;audio.src=URL.createObjectURL(await r.blob())}catch{}}
+function appendVoiceExtra(row,m){
+  if(!row||!m||row.querySelector('.voice-extra'))return;
+  const hasAudio=!!m.audio_path,hasTranslation=!!(m.audio_translation&&m.audio_translation.trim());
+  if(!hasAudio&&!hasTranslation)return;
+  const wrap=document.createElement('div');wrap.className='voice-extra';
+  if(hasAudio){const audio=document.createElement('audio');audio.controls=true;audio.preload='none';loadStoredAudio(audio,m.audio_path);wrap.append(audio)}
+  if(hasTranslation){const tr=document.createElement('div');tr.className='voice-translation';tr.textContent='译：'+m.audio_translation;wrap.append(tr)}
+  row.append(wrap);
+}
 function beginClaude(userText,userAttachments=[]){document.querySelector('.stream-disclaimer')?.remove();
   // === DOM 结构(顺序固定):status, summary, md, trailLogo ===
   // trailLogo 永远在 row 末尾 → 它自然出现在"最后一段内容下面一行"
@@ -1554,6 +1732,7 @@ async function sendMessage(text,showUser=true,files=[],existingAttachments=[],op
     const attachments=branchMode?(existingAttachments||[]):(existingAttachments.length?existingAttachments:await uploadPendingFiles(files));
     if(showUser){
       await dismissEmpty();userRow=addUser(text,'',attachments);
+      if(options.voiceAudioPath)appendVoiceExtra(userRow,{audio_path:options.voiceAudioPath,audio_lang:options.voiceLang||'zh'});
       if(state.currentTitle==='新对话'){state.currentTitle=(text||attachments[0]?.name||'附件').slice(0,40);updateSessionHeader()}
       input.value='';input.style.height='auto';clearPendingFiles();
     }
@@ -1562,18 +1741,20 @@ async function sendMessage(text,showUser=true,files=[],existingAttachments=[],op
     const body={message:text,conversation_id:state.convId,session_id:state.legacySessionId,model:state.model,effort:s.effort||'medium',extended:s.extended!==false,attachments:branchMode?[]:attachments.map(item=>item.path)};
     if(options.editMessageId)body.edit_message_id=options.editMessageId;
     if(options.retryMessageId)body.retry_message_id=options.retryMessageId;
+    if(options.voiceAudioPath){body.voice_audio_path=options.voiceAudioPath;body.voice_lang=options.voiceLang||'zh'}
+    if(_requestVoice&&!branchMode){body.request_voice=true;_requestVoice=false;$('voiceReplyToggle').classList.remove('active')}
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${state.token}`},body:JSON.stringify(body),signal:controller.signal});
     if(runId!==_chatRunId)return;
     if(r.status===401){showGate();throw Error('登录已失效')}if(!r.ok||!r.body){const detail=await r.json().catch(()=>({}));throw Error(detail.detail||'请求失败')}
     const reader=r.body.getReader(),decoder=new TextDecoder();let buffer='',finished=false;
-    const frame=f=>{if(runId!==_chatRunId)return;let event='',data='';f.split('\n').forEach(line=>{if(line.startsWith('event:'))event=line.slice(6).trim();if(line.startsWith('data:'))data+=line.slice(5).trim()});if(!event||!data)return;const d=JSON.parse(data);if(event==='conversation'){state.convId=d.conversation_id;state.legacySessionId=null;localStorage.setItem('chat_conversation',state.convId);localStorage.removeItem('chat_session');if(d.user_message_id&&userRow)userRow.dataset.msgId=d.user_message_id}if(event==='thinking')msg.thinking(d.text||'');if(event==='delta')msg.text(d.text||'');if(event==='tool_use')msg.toolUse(d);if(event==='tool_result')msg.toolResult(d);if(event==='trace_summary')msg.traceSummary(d.text||'');if(event==='done'){state.convId=d.conversation_id||state.convId;localStorage.setItem('chat_conversation',state.convId);msg.finish();if(d.assistant_message_id&&msg?.row)msg.row.dataset.msgId=d.assistant_message_id;finished=true}if(event==='error'){msg.fail(d.message);finished=true}};
+    const frame=f=>{if(runId!==_chatRunId)return;let event='',data='';f.split('\n').forEach(line=>{if(line.startsWith('event:'))event=line.slice(6).trim();if(line.startsWith('data:'))data+=line.slice(5).trim()});if(!event||!data)return;const d=JSON.parse(data);if(event==='conversation'){state.convId=d.conversation_id;state.legacySessionId=null;localStorage.setItem('chat_conversation',state.convId);localStorage.removeItem('chat_session');if(d.user_message_id&&userRow)userRow.dataset.msgId=d.user_message_id}if(event==='thinking')msg.thinking(d.text||'');if(event==='delta')msg.text(d.text||'');if(event==='tool_use')msg.toolUse(d);if(event==='tool_result')msg.toolResult(d);if(event==='trace_summary')msg.traceSummary(d.text||'');if(event==='done'){state.convId=d.conversation_id||state.convId;localStorage.setItem('chat_conversation',state.convId);msg.finish();if(d.assistant_message_id&&msg?.row)msg.row.dataset.msgId=d.assistant_message_id;if((d.audio_path||d.audio_translation)&&msg?.row)appendVoiceExtra(msg.row,{audio_path:d.audio_path,audio_translation:d.audio_translation,audio_lang:'en'});finished=true}if(event==='error'){msg.fail(d.message);finished=true}};
     while(true){if(runId!==_chatRunId)return;const{value,done}=await reader.read();buffer+=decoder.decode(value||new Uint8Array(),{stream:!done});const parts=buffer.split(/\r?\n\r?\n/);buffer=parts.pop()||'';parts.forEach(frame);if(done)break}
     if(runId!==_chatRunId)return;
     if(buffer.trim())frame(buffer);if(!finished)await recoverAfterBreak(msg,state.convId,'连接意外结束，请重试。',()=>runId===_chatRunId)
   }catch(e){if(runId!==_chatRunId)return;if(e.name==='AbortError'){if(msg&&msg.row?.classList.contains('streaming'))msg.finish()}else if(msg)await recoverAfterBreak(msg,state.convId,e.message||'连接失败，请稍后重试。',()=>runId===_chatRunId);else toast(e.message||'文件上传失败')}
   finally{if(runId===_chatRunId){_chatAbort=null;_activeMsg=null;state.busy=false;updateSendButton()}}
 }
-send.onclick=()=>{clearStaleBusy();if(state.busy){stopActiveResponseNow();return}if(_editState.active){const row=_editState.row,next=input.value.trim(),raw=row?.dataset?.raw||'';if(!next){toast('消息不能为空');return}if(next===raw){exitEditMode();return}exitEditMode({restore:false});editUserAndRegenerate(row,next);return}if(!hasComposerContent()){toast('语音功能开发中');return}sendMessage(input.value.trim(),true,[...state.pendingFiles])};
+send.onclick=()=>{clearStaleBusy();if(state.busy){stopActiveResponseNow();return}if(_editState.active){const row=_editState.row,next=input.value.trim(),raw=row?.dataset?.raw||'';if(!next){toast('消息不能为空');return}if(next===raw){exitEditMode();return}exitEditMode({restore:false});editUserAndRegenerate(row,next);return}if(!hasComposerContent()){toast('点麦克风发语音，或先打字');return}sendMessage(input.value.trim(),true,[...state.pendingFiles])};
 input.oninput=()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,144)+'px';updateSendButton();input.scrollTop=input.scrollHeight};
 
 // --- 消息长按弹窗（照搬侧边栏 bindSessionMenu 模式）---
@@ -1908,6 +2089,7 @@ function _renderMessagesIntoFragment(slice){
     const row=m.role==='user'
       ?_buildUserRow(m.text,m.timestamp,m._la||[],m.id)
       :_buildClaudeRow(m.text,m._lu||'',m.thinking,m.timestamp,m._la||[],m.traces||[],m.id);
+    appendVoiceExtra(row,m);
     frag.appendChild(row);
   });
   return frag;
@@ -1977,7 +2159,8 @@ function cloneProfile(p){return JSON.parse(JSON.stringify(p||blankProfile()))}
 function profileId(){return crypto.randomUUID?crypto.randomUUID():'m_'+Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function normalizeProfileClient(p){p=p&&typeof p==='object'?p:{};const prefs=p.preferences&&typeof p.preferences==='object'?p.preferences:{};const importState=p.claudeExportImport&&typeof p.claudeExportImport==='object'?p.claudeExportImport:{};return{fullName:String(p.fullName||''),nickname:String(p.nickname||''),savedMemories:(Array.isArray(p.savedMemories)?p.savedMemories:[]).map(x=>{const item={id:String(x.id||profileId()),content:String(x.content||''),enabled:x.enabled!==false,source:['manual','claude_export','migration'].includes(x.source)?x.source:'manual',createdAt:Number(x.createdAt)||Date.now(),updatedAt:Number(x.updatedAt)||Date.now()};if(x.importedAt)item.importedAt=Number(x.importedAt)||Date.now();if(x.externalId)item.externalId=String(x.externalId);return item}).filter(x=>x.content.trim()).slice(0,200),preferences:{enabled:prefs.enabled!==false,content:String(prefs.content||'')},claudeExportImport:{checkedAt:Number(importState.checkedAt)||0,importedAt:Number(importState.importedAt)||0,importedCount:Number(importState.importedCount)||0,foundCount:Number(importState.foundCount)||0},updatedAt:p.updatedAt||Date.now()}}
 function setProfileDirty(v=true){profileDirty=v;document.querySelectorAll('.profile-save-button').forEach(b=>b.disabled=!profileDirty)}
-function showProfilePage(id){renderProfile();['profileHome','savedMemoriesPage','preferencesPage'].forEach(k=>$(k).classList.toggle('active',k===id));$(id)?.scrollTo?.(0,0);$('memorySearchBar').classList.toggle('show',id==='savedMemoriesPage')}
+const PROFILE_PAGE_IDS=['profileHome','savedMemoriesPage','preferencesPage','connectorsPage','connectorFormPage','themePage','morePage'];
+function showProfilePage(id){renderProfile();PROFILE_PAGE_IDS.forEach(k=>$(k).classList.toggle('active',k===id));$(id)?.scrollTo?.(0,0);$('memorySearchBar').classList.toggle('show',id==='savedMemoriesPage')}
 function autoSizeMemoryTextarea(area){area.style.height='auto';area.style.height=`${Math.max(44,area.scrollHeight)}px`}
 function closeOpenMemoryRows(except=null){document.querySelectorAll('.profile-memory-row.open').forEach(row=>{if(row!==except){row.classList.remove('open');row.querySelector('.profile-memory-card').style.transform=''}})}
 function profileMemoryCard(item){const row=document.createElement('div');row.className='profile-memory-row';row.dataset.id=item.id;const del=document.createElement('div');del.className='profile-swipe-delete';del.dataset.action='delete';del.textContent='Delete';const card=document.createElement('div');card.className='profile-memory-card';const area=document.createElement('textarea');area.className='profile-memory-textarea';area.placeholder='Add a memory…';area.value=item.content;card.append(area);row.append(del,card);requestAnimationFrame(()=>autoSizeMemoryTextarea(area));return row}
@@ -1988,20 +2171,208 @@ async function saveProfile(){const payload=normalizeProfileClient(profileDraft);
 $('openMemory').onclick=async()=>{try{closeDrawer();$('memoryPanel').classList.add('show');$('memoryPanel').setAttribute('aria-hidden','false');showProfilePage('profileHome');await loadProfile()}catch(e){toast('Profile 加载失败')}};
 $('closeMemory').onclick=()=>{$('memoryPanel').classList.remove('show');$('memoryPanel').setAttribute('aria-hidden','true');$('memorySearchBar').classList.remove('show')};
 let _diaryEntries=[],_diaryMonth='all';
-$('openDiary').onclick=async()=>{try{closeDrawer();$('diaryPanel').classList.add('show');$('diaryPanel').setAttribute('aria-hidden','false');$('diarySearchBar').classList.add('show');$('diarySearchInput').value='';$('diarySearchClear').classList.add('hidden');const r=await api('/api/diary');if(!r.ok)throw Error();const data=await r.json();_diaryEntries=(data.entries||[]).reverse();_diaryMonth='all';renderDiaryMonths();renderDiaryContent()}catch(e){toast('Diary load failed')}};
+async function loadDiary(){const r=await api('/api/home/diary?viewer=shasha');if(!r.ok)throw Error();const data=await r.json();_diaryEntries=data.entries||[];_diaryMonth='all';renderDiaryMonths();renderDiaryContent()}
+$('openDiary').onclick=async()=>{try{closeDrawer();$('diaryPanel').classList.add('show');$('diaryPanel').setAttribute('aria-hidden','false');$('diarySearchBar').classList.add('show');$('diarySearchInput').value='';$('diarySearchClear').classList.add('hidden');await loadDiary()}catch(e){toast('日记加载失败')}};
+$('diaryComposeInput').addEventListener('input',()=>{const el=$('diaryComposeInput');el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'});
+$('diarySendBtn').onclick=async()=>{
+  const text=$('diaryComposeInput').value.trim();
+  if(!text)return;
+  $('diarySendBtn').disabled=true;
+  try{
+    const r=await api('/api/home/diary',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({author:'shasha',text})});
+    if(!r.ok)throw Error();
+    $('diaryComposeInput').value='';$('diaryComposeInput').style.height='auto';
+    await loadDiary();
+  }catch(e){toast('保存失败')}
+  finally{$('diarySendBtn').disabled=false}
+};
 $('closeDiary').onclick=()=>{$('diaryPanel').classList.remove('show');$('diaryPanel').setAttribute('aria-hidden','true');$('diarySearchBar').classList.remove('show')};
 $('diarySearchBar').querySelector('.diary-search-icon').innerHTML=icon('search');
 $('diarySearchInput').addEventListener('input',()=>{const v=$('diarySearchInput').value;$('diarySearchClear').classList.toggle('hidden',!v);renderDiaryContent()});
 $('diarySearchClear').onclick=()=>{$('diarySearchInput').value='';$('diarySearchClear').classList.add('hidden');renderDiaryContent()};
-function renderDiaryMonths(){const el=$('diaryMonths');el.innerHTML='';const months=new Set();_diaryEntries.forEach(e=>{if(e.date)months.add(e.date.slice(0,7))});const sorted=[...months].sort().reverse();const all=document.createElement('button');all.className='diary-month-pill'+(_diaryMonth==='all'?' active':'');all.textContent='All';all.onclick=()=>{_diaryMonth='all';renderDiaryMonths();renderDiaryContent()};el.append(all);sorted.forEach(m=>{const btn=document.createElement('button');btn.className='diary-month-pill'+(_diaryMonth===m?' active':'');const[y,mo]=m.split('-');const names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];btn.textContent=`${names[parseInt(mo)-1]} ${y}`;btn.onclick=()=>{_diaryMonth=m;renderDiaryMonths();renderDiaryContent()};el.append(btn)})}
-function renderDiaryContent(){const el=$('diaryContent');el.innerHTML='';const q=($('diarySearchInput')?.value||'').trim().toLowerCase();let items=_diaryEntries;if(_diaryMonth!=='all')items=items.filter(e=>e.date&&e.date.startsWith(_diaryMonth));if(q)items=items.filter(e=>e.text.toLowerCase().includes(q));if(!items.length){el.innerHTML='<div class="diary-empty">'+(q?'No matching entries':'No diary entries')+'</div>';return}let lastDate='';items.forEach(e=>{if(e.date&&e.date!==lastDate){lastDate=e.date;const h=document.createElement('div');h.className='diary-date-header';h.textContent=formatDiaryDate(e.date);el.append(h)}const d=document.createElement('div');d.className='diary-entry';d.textContent=e.text;el.append(d)})}
+function renderDiaryMonths(){const el=$('diaryMonths');el.innerHTML='';const months=new Set();_diaryEntries.forEach(e=>{if(e.entry_date)months.add(e.entry_date.slice(0,7))});const sorted=[...months].sort().reverse();const all=document.createElement('button');all.className='diary-month-pill'+(_diaryMonth==='all'?' active':'');all.textContent='全部';all.onclick=()=>{_diaryMonth='all';renderDiaryMonths();renderDiaryContent()};el.append(all);sorted.forEach(m=>{const btn=document.createElement('button');btn.className='diary-month-pill'+(_diaryMonth===m?' active':'');const[y,mo]=m.split('-');btn.textContent=`${y}年${parseInt(mo)}月`;btn.onclick=()=>{_diaryMonth=m;renderDiaryMonths();renderDiaryContent()};el.append(btn)})}
+function renderDiaryContent(){const el=$('diaryContent');el.innerHTML='';const q=($('diarySearchInput')?.value||'').trim().toLowerCase();let items=_diaryEntries;if(_diaryMonth!=='all')items=items.filter(e=>e.entry_date&&e.entry_date.startsWith(_diaryMonth));if(q)items=items.filter(e=>e.text.toLowerCase().includes(q));if(!items.length){el.innerHTML='<div class="diary-empty">'+(q?'没有匹配的日记':'还没有日记，写下第一篇吧')+'</div>';return}let lastDate='';items.forEach(e=>{if(e.entry_date&&e.entry_date!==lastDate){lastDate=e.entry_date;const h=document.createElement('div');h.className='diary-date-header';h.textContent=formatDiaryDate(e.entry_date);el.append(h)}
+  const d=document.createElement('div');d.className='diary-entry';
+  const meta=document.createElement('div');meta.className='diary-entry-meta';
+  const tag=document.createElement('span');tag.className='diary-author-tag '+e.author;tag.textContent=e.author==='xiao'?'晓':'莎莎';meta.append(tag);
+  if(e.hidden_from_shasha){const b=document.createElement('span');b.className='diary-hidden-badge';b.textContent='🔒 对莎莎隐藏';meta.append(b)}
+  d.append(meta);
+  const body=document.createElement('div');body.textContent=e.text;d.append(body);
+  el.append(d)})}
 function formatDiaryDate(ds){try{const[y,m,d]=ds.split('-').map(Number);const dt=new Date(y,m-1,d);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return `${days[dt.getDay()]}, ${months[dt.getMonth()]} ${d}, ${y}`}catch(e){return ds}}
+
+// ---- 我们的家: 照片相册 ----
+let _albums=[],_currentAlbum=null,_photos=[];
+async function loadAlbums(){const r=await api('/api/home/albums?viewer=shasha');if(!r.ok)throw Error();const data=await r.json();_albums=data.albums||[];renderAlbums()}
+function renderAlbums(){
+  $('albumsGrid').classList.remove('hidden');$('photosGrid').classList.add('hidden');
+  $('albumsToolbar').classList.remove('hidden');$('photosToolbar').classList.add('hidden');
+  $('photosBack').classList.add('hidden');$('photosTitle').textContent='照片';
+  const el=$('albumsGrid');el.innerHTML='';
+  if(!_albums.length){el.innerHTML='<div class="album-empty-icon">还没有相册</div>';return}
+  _albums.forEach(a=>{
+    const card=document.createElement('div');card.className='album-card'+(a.is_private?' private':'');
+    const label=document.createElement('div');label.className='album-card-label';
+    label.innerHTML=`<div>${a.name}</div><div class="album-card-count">${a.photo_count} 张</div>`;
+    card.append(label);
+    card.onclick=()=>openAlbum(a);
+    el.append(card);
+  });
+}
+async function openAlbum(a){
+  _currentAlbum=a;
+  $('albumsGrid').classList.add('hidden');$('photosGrid').classList.remove('hidden');
+  $('albumsToolbar').classList.add('hidden');$('photosToolbar').classList.remove('hidden');
+  $('photosBack').classList.remove('hidden');$('photosTitle').textContent=a.name;
+  const r=await api(`/api/home/albums/${a.id}/photos`);
+  const data=await r.json();_photos=data.photos||[];renderPhotos();
+}
+function renderPhotos(){
+  const el=$('photosGrid');el.innerHTML='';
+  if(!_photos.length){el.innerHTML='<div class="album-empty-icon">还没有照片</div>';return}
+  _photos.forEach(p=>{
+    const card=document.createElement('div');card.className='photo-card';
+    const img=document.createElement('img');
+    loadStoredPhoto(img,p.id);
+    card.append(img);
+    const actions=document.createElement('div');actions.className='photo-card-actions';
+    const del=document.createElement('button');del.textContent='×';del.onclick=async(e)=>{e.stopPropagation();if(!confirm('删除这张照片？'))return;await api(`/api/home/photos/${p.id}`,{method:'DELETE'});openAlbum(_currentAlbum)};
+    actions.append(del);card.append(actions);
+    el.append(card);
+  });
+}
+async function loadStoredPhoto(img,photoId){try{const r=await api(`/api/home/photos/${photoId}/file`);if(!r.ok)return;img.src=URL.createObjectURL(await r.blob())}catch{}}
+$('openPhotos').onclick=async()=>{try{closeDrawer();$('photosPanel').classList.add('show');$('photosPanel').setAttribute('aria-hidden','false');await loadAlbums()}catch(e){toast('相册加载失败')}};
+$('closePhotos').onclick=()=>{$('photosPanel').classList.remove('show');$('photosPanel').setAttribute('aria-hidden','true')};
+$('photosBack').onclick=()=>{_currentAlbum=null;renderAlbums()};
+$('newAlbumBtn').onclick=async()=>{
+  const name=(await askDialog({title:'新建相册',message:'给相册起个名字',input:true,confirm:'创建'}))||'';
+  if(!name)return;
+  await api('/api/home/albums',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,is_private:false})});
+  await loadAlbums();
+};
+$('uploadPhotoBtn').onclick=()=>$('photoFileInput').click();
+$('photoFileInput').onchange=async()=>{
+  const file=$('photoFileInput').files[0];
+  $('photoFileInput').value='';
+  if(!file||!_currentAlbum)return;
+  const fd=new FormData();fd.append('file',file);fd.append('uploaded_by','shasha');
+  try{
+    const r=await api(`/api/home/albums/${_currentAlbum.id}/photos`,{method:'POST',body:fd});
+    if(!r.ok)throw Error();
+    await openAlbum(_currentAlbum);
+  }catch(e){toast('上传失败')}
+};
 ['profileSave','profileSaveMemories','profileSavePreferences'].forEach(id=>$(id).onclick=async()=>{try{await saveProfile()}catch(e){toast('保存失败')}});
 document.querySelectorAll('.profile-back-button').forEach(btn=>btn.innerHTML=icon('chevronLeft'));
 $('memorySearchBar').querySelector('.memory-search-icon').innerHTML=icon('search');
 $('memorySearchInput').addEventListener('input',()=>{const v=$('memorySearchInput').value;$('memorySearchClear').classList.toggle('hidden',!v);renderSavedMemories()});
 $('memorySearchClear').onclick=()=>{$('memorySearchInput').value='';$('memorySearchClear').classList.add('hidden');renderSavedMemories()};
 $('openSavedMemories').onclick=()=>{$('memorySearchInput').value='';$('memorySearchClear').classList.add('hidden');showProfilePage('savedMemoriesPage')};$('openPreferences').onclick=()=>showProfilePage('preferencesPage');$('profileBackFromMemories').onclick=()=>showProfilePage('profileHome');$('profileBackFromPreferences').onclick=()=>showProfilePage('profileHome');
+
+// ---- 我们的家: MCP 连接设置 ----
+let _connectors=[],_editingConnectorId=null;
+async function loadConnectors(){const r=await api('/api/home/connectors');if(!r.ok)throw Error();const data=await r.json();_connectors=data.connectors||[];renderConnectors()}
+function renderConnectors(){
+  $('connectorsSummary').textContent=`${_connectors.filter(c=>c.enabled).length} 个已启用`;
+  const el=$('connectorList');el.innerHTML='';
+  _connectors.forEach(c=>{
+    const card=document.createElement('div');card.className='connector-card';
+    const top=document.createElement('div');top.className='connector-card-top';
+    const name=document.createElement('span');name.className='connector-name';name.textContent=c.name;
+    const badges=document.createElement('span');
+    const t=document.createElement('span');t.className='connector-badge';t.textContent=c.transport;badges.append(t);
+    if(c.builtin){const b=document.createElement('span');b.className='connector-badge';b.textContent='内建';badges.append(b)}
+    const en=document.createElement('span');en.className='connector-badge';en.textContent=c.enabled?'已启用':'已停用';badges.append(en);
+    top.append(name,badges);card.append(top);
+    const meta=document.createElement('div');meta.className='connector-meta';
+    meta.textContent=c.transport==='stdio'?`${c.command||''} ${(c.args||[]).join(' ')}`:(c.url||'');
+    card.append(meta);
+    const actions=document.createElement('div');actions.className='connector-actions';
+    const toggleBtn=document.createElement('button');toggleBtn.textContent=c.enabled?'停用':'启用';
+    toggleBtn.onclick=async()=>{await api(`/api/home/connectors/${c.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:!c.enabled})});await loadConnectors()};
+    const editBtn=document.createElement('button');editBtn.textContent='编辑';editBtn.onclick=()=>openConnectorForm(c);
+    actions.append(toggleBtn,editBtn);
+    if(!c.builtin){const delBtn=document.createElement('button');delBtn.textContent='删除';delBtn.onclick=async()=>{if(!confirm(`删除连接 ${c.name}？`))return;await api(`/api/home/connectors/${c.id}`,{method:'DELETE'});await loadConnectors()};actions.append(delBtn)}
+    card.append(actions);
+    el.append(card);
+  });
+}
+function openConnectorForm(c){
+  _editingConnectorId=c?c.id:null;
+  $('connectorFormTitle').textContent=c?'编辑连接':'新建连接';
+  $('connectorFormName').value=c?.name||'';
+  $('connectorFormName').disabled=!!c;
+  $('connectorFormTransport').value=c?.transport||'stdio';
+  $('connectorFormCommand').value=c?.command||'';
+  $('connectorFormArgs').value=(c?.args||[]).join(', ');
+  $('connectorFormUrl').value=c?.url||'';
+  $('connectorFormEnv').value=Object.entries(c?.env||{}).map(([k,v])=>`${k}=${v}`).join('\n');
+  $('connectorFormEnabled').checked=c?c.enabled:true;
+  showProfilePage('connectorFormPage');
+}
+$('openConnectors').onclick=async()=>{try{await loadConnectors();showProfilePage('connectorsPage')}catch(e){toast('加载失败')}};
+$('profileBackFromConnectors').onclick=()=>showProfilePage('profileHome');
+$('addConnector').onclick=()=>openConnectorForm(null);
+$('connectorFormBack').onclick=()=>showProfilePage('connectorsPage');
+$('connectorFormSave').onclick=async()=>{
+  const name=$('connectorFormName').value.trim();
+  if(!name){toast('请填写名称');return}
+  const env={};
+  $('connectorFormEnv').value.split('\n').forEach(line=>{const i=line.indexOf('=');if(i>0)env[line.slice(0,i).trim()]=line.slice(i+1).trim()});
+  const payload={
+    transport:$('connectorFormTransport').value,
+    command:$('connectorFormCommand').value.trim()||null,
+    args:$('connectorFormArgs').value.split(',').map(s=>s.trim()).filter(Boolean),
+    url:$('connectorFormUrl').value.trim()||null,
+    env,
+    enabled:$('connectorFormEnabled').checked,
+  };
+  try{
+    if(_editingConnectorId){
+      await api(`/api/home/connectors/${_editingConnectorId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    }else{
+      await api('/api/home/connectors',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,...payload})});
+    }
+    await loadConnectors();showProfilePage('connectorsPage');
+  }catch(e){toast('保存失败')}
+};
+
+// ---- 我们的家: 换肤 ----
+const THEME_SWATCHES=['#D97757','#C24473','#6B4FBB','#3E7CB1','#4C9A6A','#B8862E'];
+function initThemeSwatches(){
+  const el=$('themeSwatchRow');el.innerHTML='';
+  const current=localStorage.getItem('home_accent')||'';
+  THEME_SWATCHES.forEach(c=>{
+    const sw=document.createElement('button');sw.className='theme-swatch'+(c===current?' active':'');sw.style.background=c;
+    sw.onclick=()=>{localStorage.setItem('home_accent',c);document.documentElement.style.setProperty('--accent',c);initThemeSwatches()};
+    el.append(sw);
+  });
+}
+(function applyStoredAccent(){const c=localStorage.getItem('home_accent');if(c)document.documentElement.style.setProperty('--accent',c)})();
+$('openTheme').onclick=()=>{initThemeSwatches();showProfilePage('themePage')};
+$('profileBackFromTheme').onclick=()=>showProfilePage('profileHome');
+
+// ---- 我们的家: 占位模块 ----
+const PLACEHOLDER_ITEMS=[
+  {icon:'📅',title:'纪念日'},
+  {icon:'✅',title:'每日清单'},
+  {icon:'📖',title:'一起看书'},
+  {icon:'🎵',title:'一起听歌'},
+  {icon:'👗',title:'晓的换衣间'},
+  {icon:'🔒',title:'晓的私人空间',locked:true},
+];
+function renderPlaceholders(){
+  const el=$('placeholderGrid');el.innerHTML='';
+  PLACEHOLDER_ITEMS.forEach(p=>{
+    const card=document.createElement('div');card.className='placeholder-card'+(p.locked?' locked':'');
+    card.innerHTML=`<div class="placeholder-card-icon">${p.icon}</div><div class="placeholder-card-title">${p.title}</div><div class="placeholder-card-sub">${p.locked?'锁着的':'敬请期待'}</div>`;
+    card.onclick=()=>toast(p.locked?'这里锁着呢':'敬请期待');
+    el.append(card);
+  });
+}
+$('openMore').onclick=()=>{renderPlaceholders();showProfilePage('morePage')};
+$('profileBackFromMore').onclick=()=>showProfilePage('profileHome');
 $('profileFullName').oninput=e=>{profileDraft.fullName=e.target.value;setProfileDirty()};$('profileNickname').oninput=e=>{profileDraft.nickname=e.target.value;setProfileDirty()};$('preferencesText').oninput=e=>{profileDraft.preferences.content=e.target.value;setProfileDirty()};$('preferencesEnabled').onclick=()=>{profileDraft.preferences.enabled=!profileDraft.preferences.enabled;renderProfile();setProfileDirty()};
 $('addSavedMemory').onclick=()=>{profileDraft.savedMemories.unshift({id:profileId(),content:'',enabled:true,source:'manual',createdAt:Date.now(),updatedAt:Date.now()});renderSavedMemories();setProfileDirty();setTimeout(()=>$('savedMemoriesList').querySelector('.profile-memory-row:first-child textarea')?.focus(),30)};
 $('savedMemoriesList').addEventListener('input',e=>{const row=e.target.closest('.profile-memory-row');if(!row)return;const item=profileDraft.savedMemories.find(x=>x.id===row.dataset.id);if(item){item.content=e.target.value;item.updatedAt=Date.now();autoSizeMemoryTextarea(e.target);setProfileDirty()}});

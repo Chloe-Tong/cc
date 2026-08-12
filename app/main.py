@@ -25,7 +25,7 @@ from starlette.formparsers import MultiPartParser
 
 MultiPartParser.max_part_size = 60 * 1024 * 1024  # 与 uploads.py 的 MAX_FILE_BYTES 对齐
 
-from app import auth
+from app import auth, home_routes, mcp_client
 from app.actor import ActorBusyError
 from app.claude import (
     SessionResumeError,
@@ -34,8 +34,10 @@ from app.claude import (
     summarize_thinking,
     summarize_tool_use,
     summarize_traces,
+    translate_to_chinese,
 )
 from app.codex_api import stream_codex_chat
+from app.home_store import initialize_home_store
 from app.memory import (
     MAX_MEMORY_CHARS,
     add_saved_memory,
@@ -62,10 +64,14 @@ from app.store import (
     complete_turn,
     ensure_conversation,
     initialize_store,
+    mark_rollover,
     prepare_edit_turn,
     prepare_retry_turn,
+    recent_messages,
     resolve_conversation,
     restore_branch,
+    set_message_audio,
+    should_rollover,
 )
 from app.uploads import (
     remove_conversation_uploads,
@@ -80,6 +86,7 @@ timing_logger = logging.getLogger("uvicorn.error")
 STATIC = ROOT / "static"
 chat_lock = asyncio.Lock()
 initialize_store()
+initialize_home_store()
 TRACE_CONTENT_CHARS = 20_000
 
 
@@ -106,6 +113,7 @@ app = FastAPI(
     openapi_url=None,
     lifespan=lifespan,
 )
+app.include_router(home_routes.router)
 
 AUTH_MODE = os.environ.get("AUTH_MODE", "app").strip().lower()
 if AUTH_MODE not in {"app", "both"}:
@@ -194,6 +202,9 @@ class ChatBody(BaseModel):
     effort: str = Field(default="medium", max_length=16)
     extended: bool = True
     attachments: list[str] = Field(default_factory=list, max_length=10)
+    voice_audio_path: str | None = Field(default=None, max_length=1000)
+    voice_lang: str | None = Field(default=None, max_length=8)
+    request_voice: bool = False
 
 
 class ToolCaptionBody(BaseModel):
@@ -412,6 +423,16 @@ async def chat(body: ChatBody) -> StreamingResponse:
                     body.session_id,
                     current_attachment_items,
                 )
+                if resume_id and should_rollover(conv_id):
+                    resume_id = None
+                    context_messages = recent_messages(conv_id, limit=20)
+                    mark_rollover(conv_id)
+            if body.voice_audio_path:
+                set_message_audio(
+                    user_message_id,
+                    audio_path=body.voice_audio_path,
+                    audio_lang=body.voice_lang or "zh",
+                )
             payload = json.dumps(
                 {
                     "conversation_id": conv_id,
@@ -530,6 +551,30 @@ async def chat(body: ChatBody) -> StreamingResponse:
                     chunk["conversation_id"] = conv_id
                     chunk["assistant_message_id"] = assistant_message_id
                     branch_committed = True
+                    if response_text.strip() and body.model != "codex":
+                        try:
+                            translation = await translate_to_chinese(response_text)
+                            wants_voice = body.request_voice or any(
+                                t.get("type") == "tool_use"
+                                and (t.get("name") or "").endswith("speak_this_reply")
+                                for t in response_traces
+                            )
+                            audio_path = None
+                            if wants_voice:
+                                audio_path = await mcp_client.synthesize_english_speech(
+                                    response_text, home_routes.VOICE_ROOT
+                                )
+                            if audio_path or translation:
+                                set_message_audio(
+                                    assistant_message_id,
+                                    audio_path=audio_path,
+                                    audio_translation=translation or None,
+                                    audio_lang="en",
+                                )
+                                chunk["audio_path"] = audio_path
+                                chunk["audio_translation"] = translation
+                        except Exception:
+                            logger.exception("voice synthesis/translation failed")
                 name = chunk.pop("event")
                 data = json.dumps(chunk, ensure_ascii=False)
                 yield f"event: {name}\ndata: {data}\n\n"

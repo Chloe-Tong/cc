@@ -10,6 +10,8 @@ echo "=== 1. 安装系统依赖 ==="
 grep -rl "cloudsmith\|caddy" /etc/apt/sources.list.d/ 2>/dev/null | xargs -r rm -f || true
 apt-get update -q || apt-get update --allow-insecure-repositories -q || true
 apt-get install -y python3 python3-venv python3-pip nginx git curl
+# uv/uvx: needed to run the ElevenLabs MCP connector (voice messages)
+python3 -m pip install --break-system-packages -q uv || true
 
 echo "=== 2. 克隆代码 ==="
 if [ -d "$APP_DIR/.git" ]; then
@@ -21,7 +23,7 @@ fi
 echo "=== 3. Python 虚拟环境 + 依赖 ==="
 python3 -m venv "$APP_DIR/.venv"
 "$APP_DIR/.venv/bin/pip" install --upgrade pip -q
-"$APP_DIR/.venv/bin/pip" install anthropic "claude-agent-sdk==0.2.97" fastapi python-multipart python-dotenv "uvicorn[standard]" -q
+"$APP_DIR/.venv/bin/pip" install anthropic "claude-agent-sdk==0.2.97" "mcp>=1.29.0" fastapi python-multipart python-dotenv "uvicorn[standard]" -q
 
 echo "=== 4. 生成 .env（如果不存在）==="
 if [ ! -f "$APP_DIR/.env" ]; then
@@ -33,6 +35,7 @@ CHAT_SECRET=${SECRET}
 BASIC_AUTH_USER=
 BASIC_AUTH_PASSWORD=
 MEMORY_SEARCH_URL=http://127.0.0.1:3900/search
+ELEVENLABS_API_KEY=
 ENV
   echo ">>> 请编辑 $APP_DIR/.env 设置 CHAT_PASSWORD"
 fi
