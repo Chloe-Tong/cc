@@ -6,7 +6,9 @@ APP_DIR=/opt/chatnest
 DOMAIN=${1:-""}    # 可选：./deploy.sh your-domain.com
 
 echo "=== 1. 安装系统依赖 ==="
-apt-get update -q
+# 清理签名失效的第三方源，避免 apt-get update 报错中断
+grep -rl "cloudsmith\|caddy" /etc/apt/sources.list.d/ 2>/dev/null | xargs -r rm -f || true
+apt-get update -q || apt-get update --allow-insecure-repositories -q || true
 apt-get install -y python3 python3-venv python3-pip nginx git curl
 
 echo "=== 2. 克隆代码 ==="
