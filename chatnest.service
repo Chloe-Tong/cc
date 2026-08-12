@@ -1,0 +1,20 @@
+[Unit]
+Description=ChatNest AI Chat App
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/chatnest
+EnvironmentFile=/opt/chatnest/.env
+Environment=AGENT_APP_ROOT=/opt/chatnest
+Environment=HOST=127.0.0.1
+Environment=PORT=8787
+ExecStart=/opt/chatnest/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8787
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
