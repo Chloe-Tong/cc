@@ -16,19 +16,19 @@ const navItems: Array<{ id: NavSection; label: string; emoji: string }> = [
 
 export default function AppLayout({ children, activeSection, onNavigate }: Props) {
   return (
-    <div className="flex h-screen w-screen overflow-hidden"
-      style={{ background: 'linear-gradient(150deg, #fef5f5 0%, #fde8f2 55%, #f9dcea 100%)' }}>
-
-      {/* Sidebar — soft blush */}
+    <div className="flex h-screen w-screen overflow-hidden">
+      {/* Sidebar */}
       <nav className="flex flex-col items-center gap-2 py-6 px-2 w-16 shrink-0"
         style={{
-          background: 'rgba(255,251,252,0.7)',
-          borderRight: '1px solid #f2ccd8',
-          backdropFilter: 'blur(8px)',
+          background: 'rgba(235, 224, 216, 0.55)',
+          borderRight: '1px solid rgba(196,168,158,0.35)',
+          backdropFilter: 'blur(12px)',
         }}>
-        {/* Logo */}
         <div className="mb-4 w-9 h-9 rounded-full flex items-center justify-center text-lg"
-          style={{ background: 'linear-gradient(135deg, #fde8f2 0%, #f9dcea 100%)', border: '1px solid #f0c4d4' }}>
+          style={{
+            background: 'rgba(245,237,230,0.80)',
+            border: '1px solid #d4bab6',
+          }}>
           🌸
         </div>
 
@@ -38,9 +38,9 @@ export default function AppLayout({ children, activeSection, onNavigate }: Props
             <button key={item.id} onClick={() => onNavigate(item.id)} title={item.label}
               className="w-10 h-10 rounded-xl flex items-center justify-center text-base transition-all duration-150"
               style={active ? {
-                background: 'linear-gradient(135deg, #fde8f2 0%, #f9dcea 100%)',
-                border: '1px solid #e8b0c8',
-                boxShadow: '0 2px 8px rgba(216,120,154,0.18)',
+                background: 'rgba(245,237,230,0.85)',
+                border: '1px solid #c4aea8',
+                boxShadow: '0 2px 8px rgba(180,148,140,0.22)',
               } : {
                 background: 'transparent',
                 border: '1px solid transparent',

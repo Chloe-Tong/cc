@@ -2,24 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
-
 :root {
   color-scheme: light;
-  --ink:    #2e1a24;
-  --cream:  #fffbfc;
-  --pink:   #e8a0b8;
-  --rose:   #d4789a;
-  --blush:  #f8dcea;
+  --cream:       #f5ede6;
+  --ink:         #2e2020;
+  --sage-pink:   #c4aea8;
+  --sage-pink-2: #d4bab6;
+  --sage-pink-3: #b89e9a;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: linear-gradient(150deg, #fef5f5 0%, #fde8f2 55%, #f9dcea 100%);
+  /* 奶油白底 + 鼠尾草粉水彩晕染 */
+  background-color: #f5ede6;
+  background-image:
+    radial-gradient(ellipse 70% 60% at 12% 20%, rgba(196,168,158,0.50) 0%, transparent 68%),
+    radial-gradient(ellipse 60% 70% at 82% 72%, rgba(210,182,174,0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 45% at 58% 4%,  rgba(178,154,148,0.35) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 55% at 40% 90%, rgba(200,172,162,0.30) 0%, transparent 60%);
   background-attachment: fixed;
-  color: #2e1a24;
+  color: #2e2020;
   font-family: 'Noto Sans SC', system-ui, sans-serif;
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
@@ -27,18 +31,19 @@ body {
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #f0c4d8; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: #e0a4c0; }
+::-webkit-scrollbar-thumb { background: #d4b8b2; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #c4a8a2; }
 
 .card {
-  background: #fffbfc;
-  border: 1px solid #f2ccd8;
+  background: rgba(245, 237, 230, 0.82);
+  border: 1px solid #d8c4be;
   border-radius: 14px;
-  box-shadow: 2px 2px 0 #f0c4d4;
+  box-shadow: 2px 2px 0 rgba(196,168,158,0.55);
+  backdrop-filter: blur(4px);
   transition: box-shadow 0.12s ease, transform 0.12s ease;
 }
 .card:hover {
-  box-shadow: 3px 3px 0 #e8b0c8;
+  box-shadow: 3px 3px 0 rgba(196,168,158,0.70);
   transform: translate(-0.5px, -0.5px);
 }
 

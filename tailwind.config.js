@@ -4,27 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        pink: {
-          50:  '#fff5f8',
-          100: '#fde8f2',
-          200: '#f9d0e6',
-          300: '#f2b8d8',
-          400: '#e8a0c8',
-          500: '#d4789a',
-          600: '#c05880',
+        sage: {
+          pink:  '#c4aea8',
+          light: '#d4bab6',
+          dark:  '#b89e9a',
+          pale:  '#e8d8d2',
         },
-        blush: '#f9dcea',
-        cream: '#fffbfc',
-        ink:   '#2e1a24',
+        cream: {
+          DEFAULT: '#f5ede6',
+          light:   '#f9f3ee',
+          card:    'rgba(245,237,230,0.82)',
+        },
+        ink: '#2e2020',
       },
       fontFamily: {
         hand: ['"Caveat"', 'cursive'],
         sans: ['"Noto Sans SC"', 'system-ui', 'sans-serif'],
-      },
-      backgroundImage: {
-        'app-gradient': 'linear-gradient(150deg, #fef5f5 0%, #fde8f2 55%, #f9dcea 100%)',
-        'nav-gradient': 'linear-gradient(180deg, #fde8f2 0%, #f9dcea 100%)',
-        'tab-gradient': 'linear-gradient(180deg, #fde8f2 0%, #f9dcea 100%)',
       },
     },
   },
