@@ -6,17 +6,23 @@ import PrivatePsychTab from './tabs/PrivatePsychTab'
 import FactsClaimsTab from './tabs/FactsClaimsTab'
 import DeletedTab from './tabs/DeletedTab'
 import IdentityTab from './tabs/IdentityTab'
+import {
+  IconBooks, IconCamera, IconInfinity, IconHeart,
+  IconScale, IconTrash, IconAnchor,
+} from '../icons/Icons'
 
-type Tab = { id: string; label: string; emoji: string; badge?: number }
+type TabIcon = (p: { size: number }) => JSX.Element
+
+type Tab = { id: string; label: string; Icon: TabIcon; badge?: number }
 
 const tabs: Tab[] = [
-  { id: 'longterm',  label: '长期记忆',   emoji: '📚' },
-  { id: 'episodic',  label: '情景记忆',   emoji: '🎞' },
-  { id: 'promises',  label: '承诺',       emoji: '🤝', badge: 3 },
-  { id: 'private',   label: '私人心理',   emoji: '🔒' },
-  { id: 'facts',     label: '事实与冲突', emoji: '⚖️', badge: 1 },
-  { id: 'deleted',   label: '删除与恢复', emoji: '🗑', badge: 1 },
-  { id: 'identity',  label: '身份锚点',   emoji: '🪞' },
+  { id: 'longterm',  label: '长期记忆',   Icon: IconBooks },
+  { id: 'episodic',  label: '情景记忆',   Icon: IconCamera },
+  { id: 'promises',  label: '承诺',       Icon: IconInfinity, badge: 3 },
+  { id: 'private',   label: '私人心理',   Icon: IconHeart },
+  { id: 'facts',     label: '事实与冲突', Icon: IconScale, badge: 1 },
+  { id: 'deleted',   label: '删除与恢复', Icon: IconTrash, badge: 1 },
+  { id: 'identity',  label: '身份锚点',   Icon: IconAnchor },
 ]
 
 export default function MemoryLibrary() {
@@ -51,7 +57,9 @@ export default function MemoryLibrary() {
                   color: '#7a5a54',
                   border: '1px solid transparent',
                 }}>
-                <span className="text-sm shrink-0">{tab.emoji}</span>
+                <span className="shrink-0" style={{ color: active ? '#2e2020' : '#9a7a74' }}>
+                  <tab.Icon size={16} />
+                </span>
                 <span className="flex-1">{tab.label}</span>
                 {tab.badge !== undefined && (
                   <span className="font-hand text-xs px-1.5 rounded-full"

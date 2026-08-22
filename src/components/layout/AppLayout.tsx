@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { NavSection } from '../../App'
+import { IconBlossom, IconChat, IconBrain, IconLightning, IconSettings } from '../icons/Icons'
 
 interface Props {
   children: ReactNode
@@ -7,11 +8,13 @@ interface Props {
   onNavigate: (section: NavSection) => void
 }
 
-const navItems: Array<{ id: NavSection; label: string; emoji: string }> = [
-  { id: 'chat',     label: '聊天',  emoji: '💬' },
-  { id: 'memory',   label: '记忆库', emoji: '🧠' },
-  { id: 'work',     label: '工作区', emoji: '⚡' },
-  { id: 'settings', label: '设置',  emoji: '⚙️' },
+type NavItem = { id: NavSection; label: string; Icon: (p: { size: number }) => JSX.Element }
+
+const navItems: NavItem[] = [
+  { id: 'chat',     label: '聊天',  Icon: IconChat },
+  { id: 'memory',   label: '记忆库', Icon: IconBrain },
+  { id: 'work',     label: '工作区', Icon: IconLightning },
+  { id: 'settings', label: '设置',  Icon: IconSettings },
 ]
 
 export default function AppLayout({ children, activeSection, onNavigate }: Props) {
@@ -24,28 +27,27 @@ export default function AppLayout({ children, activeSection, onNavigate }: Props
           borderRight: '1px solid rgba(196,168,158,0.35)',
           backdropFilter: 'blur(12px)',
         }}>
-        <div className="mb-4 w-9 h-9 rounded-full flex items-center justify-center text-lg"
-          style={{
-            background: 'rgba(245,237,230,0.80)',
-            border: '1px solid #d4bab6',
-          }}>
-          🌸
+        <div className="mb-4 w-9 h-9 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(245,237,230,0.80)', border: '1px solid #d4bab6' }}>
+          <IconBlossom size={22} style={{ color: '#c4aea8' }} />
         </div>
 
         {navItems.map((item) => {
           const active = activeSection === item.id
           return (
             <button key={item.id} onClick={() => onNavigate(item.id)} title={item.label}
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-base transition-all duration-150"
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150"
               style={active ? {
                 background: 'rgba(245,237,230,0.85)',
                 border: '1px solid #c4aea8',
                 boxShadow: '0 2px 8px rgba(180,148,140,0.22)',
+                color: '#2e2020',
               } : {
                 background: 'transparent',
                 border: '1px solid transparent',
+                color: '#7a5a54',
               }}>
-              {item.emoji}
+              <item.Icon size={20} />
             </button>
           )
         })}
