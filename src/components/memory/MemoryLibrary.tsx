@@ -21,41 +21,45 @@ const tabs: Tab[] = [
 
 export default function MemoryLibrary() {
   const [activeTab, setActiveTab] = useState('longterm')
-  const [search, setSearch] = useState('')
+  const [search, setSearch]       = useState('')
 
   return (
     <div className="flex h-full">
-      {/* Left tab sidebar */}
+      {/* Tab sidebar — sage→dusty-rose gradient */}
       <aside className="w-44 shrink-0 flex flex-col py-5"
-        style={{ background: '#c8d5c2', borderRight: '1.5px solid #1e2118' }}>
+        style={{
+          background: 'linear-gradient(180deg, #b2c4ae 0%, #ccb4b4 100%)',
+          borderRight: '1.5px solid #261a1a',
+        }}>
         <div className="px-4 mb-3">
-          <span className="font-hand text-xl font-semibold text-ink">记忆库</span>
+          <span className="font-hand text-xl font-semibold" style={{ color: '#261a1a' }}>记忆库</span>
         </div>
 
         <nav className="flex flex-col gap-1 px-2 flex-1">
           {tabs.map((tab) => {
             const active = activeTab === tab.id
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left transition-all duration-100"
                 style={active ? {
-                  background: '#f5f0e4',
-                  border: '1.5px solid #1e2118',
-                  boxShadow: '2px 2px 0 #1e2118',
-                  color: '#1e2118',
+                  background: '#f7f2ee',
+                  border: '1.5px solid #261a1a',
+                  boxShadow: '2px 2px 0 #261a1a',
+                  color: '#261a1a',
                   fontWeight: 500,
                 } : {
-                  color: '#4c6244',
+                  color: '#4a3030',
                   border: '1.5px solid transparent',
-                }}
-              >
+                }}>
                 <span className="text-sm shrink-0">{tab.emoji}</span>
                 <span className="flex-1">{tab.label}</span>
                 {tab.badge !== undefined && (
                   <span className="font-hand text-xs px-1.5 rounded-full"
-                    style={{ background: active ? '#c4983a' : '#93af8b', color: '#f5f0e4', minWidth: 18, textAlign: 'center' }}>
+                    style={{
+                      background: active ? '#c0a4a8' : '#d4b8b4',
+                      color: '#f7f2ee',
+                      minWidth: 18, textAlign: 'center',
+                    }}>
                     {tab.badge}
                   </span>
                 )}
@@ -64,31 +68,28 @@ export default function MemoryLibrary() {
           })}
         </nav>
 
-        <div className="px-4 pt-3 border-t" style={{ borderColor: '#93af8b' }}>
-          <p className="font-hand text-sm" style={{ color: '#5e7a55' }}>共 14 条记忆</p>
-          <p className="font-hand text-xs mt-0.5" style={{ color: '#75956b' }}>2026-06-29</p>
+        <div className="px-4 pt-3" style={{ borderTop: '1px solid rgba(38,26,26,0.15)' }}>
+          <p className="font-hand text-sm" style={{ color: '#604040' }}>共 14 条记忆</p>
+          <p className="font-hand text-xs mt-0.5" style={{ color: '#906868' }}>2026-06-29</p>
         </div>
       </aside>
 
-      {/* Content area */}
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#d2dece' }}>
+      {/* Content */}
+      <div className="flex-1 flex flex-col overflow-hidden"
+        style={{ background: 'linear-gradient(150deg, #c4d0be 0%, #d0c0c0 55%, #d8babb 100%)' }}>
         {/* Search */}
-        <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1.5px solid #b5c9af' }}>
+        <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(38,26,26,0.12)' }}>
           <div className="relative max-w-sm">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#75956b' }}>🔍</span>
-            <input
-              type="text"
-              placeholder="搜索记忆…"
-              value={search}
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#906868' }}>🔍</span>
+            <input type="text" placeholder="搜索记忆…" value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2 text-sm rounded-xl outline-none transition-all font-sans"
               style={{
-                background: '#f5f0e4',
-                border: '1.5px solid #1e2118',
-                boxShadow: '2px 2px 0 #1e2118',
-                color: '#1e2118',
-              }}
-            />
+                background: '#f7f2ee',
+                border: '1.5px solid #261a1a',
+                boxShadow: '2px 2px 0 #261a1a',
+                color: '#261a1a',
+              }} />
           </div>
         </div>
 

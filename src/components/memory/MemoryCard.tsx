@@ -1,13 +1,13 @@
 import type { Memory } from '../../types/memory'
 
 const typeConfig: Record<string, { label: string; color: string; bg: string }> = {
-  fact:                        { label: '事实',   color: '#4c6244', bg: '#d2dece' },
-  episodic:                    { label: '情景',   color: '#5e4a2a', bg: '#e8dcc8' },
-  relationship:                { label: '关系',   color: '#2a4a5e', bg: '#c8d8e8' },
-  promise:                     { label: '承诺',   color: '#3a5a40', bg: '#c8e0cc' },
-  private_psychology:          { label: '私人心理', color: '#5e2a3a', bg: '#e8c8d0' },
-  relationship_self_understanding: { label: '关系理解', color: '#4a3a5e', bg: '#d8d0e8' },
-  historical_psychology:       { label: '历史心理', color: '#4a4a3a', bg: '#deded2' },
+  fact:                            { label: '事实',    color: '#4a5a3a', bg: '#d8e4d0' },
+  episodic:                        { label: '情景',    color: '#6a3a4a', bg: '#e8d4d8' },
+  relationship:                    { label: '关系',    color: '#4a3a6a', bg: '#dcd4e8' },
+  promise:                         { label: '承诺',    color: '#5a3a3a', bg: '#e8d8d4' },
+  private_psychology:              { label: '私人心理', color: '#7a3a50', bg: '#f0d4dc' },
+  relationship_self_understanding: { label: '关系理解', color: '#5a3a5a', bg: '#e8d4e8' },
+  historical_psychology:           { label: '历史心理', color: '#5a4a4a', bg: '#e4d8d8' },
 }
 
 function highlightText(text: string, query: string) {
@@ -17,7 +17,7 @@ function highlightText(text: string, query: string) {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase()
-          ? <mark key={i} style={{ background: '#c4983a', color: '#1e2118', borderRadius: 3, padding: '0 2px' }}>{part}</mark>
+          ? <mark key={i} style={{ background: '#d4b0b8', color: '#261a1a', borderRadius: 3, padding: '0 2px' }}>{part}</mark>
           : part
       )}
     </>
@@ -47,28 +47,27 @@ export default function MemoryCard({ memory, showType = true, highlight = '' }: 
               </span>
               {memory.tags?.map((tag) => (
                 <span key={tag} className="font-hand text-xs px-2 py-0.5 rounded-full"
-                  style={{ color: '#5e7a55', background: '#c8d5c2', border: '1px solid #93af8b' }}>
+                  style={{ color: '#7a5050', background: '#ead8d8', border: '1px solid #c4a4a4' }}>
                   {tag}
                 </span>
               ))}
             </div>
           )}
 
-          <p className="text-sm leading-relaxed" style={{ color: '#1e2118' }}>
+          <p className="text-sm leading-relaxed" style={{ color: '#261a1a' }}>
             {highlightText(memory.content, highlight)}
           </p>
 
           {memory.meaning && (
-            <div className="mt-2.5 pl-3" style={{ borderLeft: '3px solid #c4983a' }}>
-              <p className="text-xs leading-relaxed italic" style={{ color: '#4c6244' }}>
+            <div className="mt-2.5 pl-3" style={{ borderLeft: '3px solid #c0a4a8' }}>
+              <p className="text-xs leading-relaxed italic" style={{ color: '#604848' }}>
                 {highlightText(memory.meaning, highlight)}
               </p>
             </div>
           )}
 
           {memory.relationship_effect && (
-            <p className="mt-2 text-xs leading-relaxed font-hand text-base"
-              style={{ color: '#5e7a55' }}>
+            <p className="mt-2 text-xs leading-relaxed font-hand text-base" style={{ color: '#906868' }}>
               ↳ {memory.relationship_effect}
             </p>
           )}
@@ -78,10 +77,7 @@ export default function MemoryCard({ memory, showType = true, highlight = '' }: 
               {memory.source_refs.map((ref) => (
                 <button key={ref.seq}
                   className="font-hand text-sm px-2.5 py-0.5 rounded-full transition-all"
-                  style={{
-                    background: '#e8ede4', border: '1px solid #93af8b',
-                    color: '#5e7a55', boxShadow: '1px 1px 0 #93af8b',
-                  }}>
+                  style={{ background: '#f0e8e8', border: '1px solid #c4a4a4', color: '#7a5050', boxShadow: '1px 1px 0 #c4a4a4' }}>
                   #{ref.seq}
                   {ref.preview && <span style={{ opacity: 0.6 }}> · {ref.preview.slice(0, 10)}…</span>}
                 </button>
@@ -90,7 +86,7 @@ export default function MemoryCard({ memory, showType = true, highlight = '' }: 
           )}
         </div>
 
-        <p className="font-hand text-sm shrink-0" style={{ color: '#93af8b' }}>{dateStr}</p>
+        <p className="font-hand text-sm shrink-0" style={{ color: '#b09090' }}>{dateStr}</p>
       </div>
     </div>
   )
