@@ -17,17 +17,18 @@ const navItems: Array<{ id: NavSection; label: string; emoji: string }> = [
 export default function AppLayout({ children, activeSection, onNavigate }: Props) {
   return (
     <div className="flex h-screen w-screen overflow-hidden"
-      style={{ background: 'linear-gradient(150deg, #c4d0be 0%, #d0c0c0 55%, #d8babb 100%)' }}>
+      style={{ background: 'linear-gradient(150deg, #fef5f5 0%, #fde8f2 55%, #f9dcea 100%)' }}>
 
-      {/* Sidebar — sage→rose vertical gradient */}
-      <nav className="flex flex-col items-center gap-2 py-5 px-2 w-16 shrink-0"
+      {/* Sidebar — soft blush */}
+      <nav className="flex flex-col items-center gap-2 py-6 px-2 w-16 shrink-0"
         style={{
-          background: 'linear-gradient(180deg, #a4b8a0 0%, #c0aaaa 100%)',
-          borderRight: '1.5px solid #261a1a',
+          background: 'rgba(255,251,252,0.7)',
+          borderRight: '1px solid #f2ccd8',
+          backdropFilter: 'blur(8px)',
         }}>
         {/* Logo */}
         <div className="mb-4 w-9 h-9 rounded-full flex items-center justify-center text-lg"
-          style={{ background: '#f7f2ee', border: '2px solid #261a1a', boxShadow: '2px 2px 0 #261a1a' }}>
+          style={{ background: 'linear-gradient(135deg, #fde8f2 0%, #f9dcea 100%)', border: '1px solid #f0c4d4' }}>
           🌸
         </div>
 
@@ -35,15 +36,14 @@ export default function AppLayout({ children, activeSection, onNavigate }: Props
           const active = activeSection === item.id
           return (
             <button key={item.id} onClick={() => onNavigate(item.id)} title={item.label}
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-base transition-all duration-100"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-base transition-all duration-150"
               style={active ? {
-                background: '#f7f2ee',
-                border: '1.5px solid #261a1a',
-                boxShadow: '2px 2px 0 #261a1a',
-                transform: 'translate(-0.5px, -0.5px)',
+                background: 'linear-gradient(135deg, #fde8f2 0%, #f9dcea 100%)',
+                border: '1px solid #e8b0c8',
+                boxShadow: '0 2px 8px rgba(216,120,154,0.18)',
               } : {
                 background: 'transparent',
-                border: '1.5px solid transparent',
+                border: '1px solid transparent',
               }}>
               {item.emoji}
             </button>

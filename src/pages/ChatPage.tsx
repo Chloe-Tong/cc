@@ -8,21 +8,21 @@ export default function ChatPage() {
   ]
 
   return (
-    <div className="flex flex-col h-full"
-      style={{ background: 'linear-gradient(150deg, #c4d0be 0%, #d0c0c0 55%, #d8babb 100%)' }}>
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-5 py-3 flex items-center gap-3 shrink-0"
         style={{
-          background: 'linear-gradient(90deg, #b2c4ae 0%, #ccb4b4 100%)',
-          borderBottom: '1.5px solid #261a1a',
+          background: 'rgba(255,251,252,0.75)',
+          borderBottom: '1px solid #f2ccd8',
+          backdropFilter: 'blur(8px)',
         }}>
         <div className="w-9 h-9 rounded-full flex items-center justify-center text-base"
-          style={{ background: '#f7f2ee', border: '2px solid #261a1a', boxShadow: '2px 2px 0 #261a1a' }}>
+          style={{ background: 'linear-gradient(135deg, #fde8f2 0%, #f9dcea 100%)', border: '1px solid #f0c4d4' }}>
           🌸
         </div>
         <div>
-          <p className="font-hand text-lg font-semibold" style={{ color: '#261a1a' }}>伴侣</p>
-          <p className="font-hand text-sm" style={{ color: '#6a4848' }}>● 在线</p>
+          <p className="font-hand text-lg font-semibold" style={{ color: '#2e1a24' }}>伴侣</p>
+          <p className="font-hand text-sm" style={{ color: '#e8a0b8' }}>● 在线</p>
         </div>
       </div>
 
@@ -30,7 +30,7 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
         <div className="text-center">
           <span className="font-hand text-sm px-3 py-1 rounded-full"
-            style={{ background: '#dcd0d0', color: '#604848', border: '1px solid #c4a4a4' }}>
+            style={{ background: 'rgba(255,251,252,0.7)', color: '#c090a8', border: '1px solid #f0c4d4' }}>
             2026年6月29日
           </span>
         </div>
@@ -38,29 +38,27 @@ export default function ChatPage() {
           <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} gap-2`}>
             {msg.role === 'ai' && (
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 mt-0.5"
-                style={{ background: '#f7f2ee', border: '1.5px solid #261a1a', boxShadow: '1.5px 1.5px 0 #261a1a' }}>
+                style={{ background: 'linear-gradient(135deg, #fde8f2 0%, #f9dcea 100%)', border: '1px solid #f0c4d4' }}>
                 🌸
               </div>
             )}
             <div className="max-w-xs lg:max-w-md">
               <div className="px-4 py-2.5 text-sm leading-relaxed"
                 style={msg.role === 'ai' ? {
-                  background: '#f7f2ee',
-                  border: '1.5px solid #261a1a',
+                  background: 'rgba(255,251,252,0.85)',
+                  border: '1px solid #f0c4d4',
                   borderRadius: '4px 16px 16px 16px',
-                  boxShadow: '3px 3px 0 #261a1a',
-                  color: '#261a1a',
+                  color: '#2e1a24',
                 } : {
-                  background: 'linear-gradient(135deg, #d8c8c8 0%, #d0c0c8 100%)',
-                  border: '1.5px solid #7a5050',
+                  background: 'linear-gradient(135deg, #fde0ea 0%, #f8d0e2 100%)',
+                  border: '1px solid #e8b0c8',
                   borderRadius: '16px 4px 16px 16px',
-                  boxShadow: '3px 3px 0 #7a5050',
-                  color: '#261a1a',
+                  color: '#2e1a24',
                 }}>
                 {msg.content}
               </div>
               <p className="font-hand text-xs mt-1 px-1"
-                style={{ color: '#b09090', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
+                style={{ color: '#d0a8b8', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                 {msg.time}
               </p>
             </div>
@@ -69,17 +67,16 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="px-5 py-4 shrink-0" style={{ borderTop: '1px solid rgba(38,26,26,0.12)' }}>
+      <div className="px-5 py-4 shrink-0" style={{ borderTop: '1px solid rgba(242,204,216,0.5)' }}>
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl"
-          style={{ background: '#f7f2ee', border: '1.5px solid #261a1a', boxShadow: '3px 3px 0 #261a1a' }}>
+          style={{ background: 'rgba(255,251,252,0.85)', border: '1px solid #f0c4d4' }}>
           <input type="text" placeholder="说点什么…"
-            className="flex-1 bg-transparent text-sm outline-none font-sans" style={{ color: '#261a1a' }} />
+            className="flex-1 bg-transparent text-sm outline-none font-sans" style={{ color: '#2e1a24' }} />
           <button className="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all"
             style={{
-              background: 'linear-gradient(135deg, #c0a4a8 0%, #b08888 100%)',
-              border: '1.5px solid #261a1a',
-              boxShadow: '2px 2px 0 #261a1a',
-              color: '#f7f2ee',
+              background: 'linear-gradient(135deg, #e8a0b8 0%, #d4789a 100%)',
+              border: 'none',
+              color: '#fff',
             }}>
             ↑
           </button>
