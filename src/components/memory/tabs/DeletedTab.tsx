@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { deletedMemories } from '../../../data/mockMemories'
+import { useState, useEffect } from 'react'
+import { api, onWsEvent } from '../../../api/client'
 import type { DeletedMemory } from '../../../types/memory'
 
-function RestoreRequestPanel({ item }: { item: DeletedMemory }) {
+function RestoreRequestPanel({ item, onResolved }: { item: DeletedMemory; onResolved: () => void }) {
   const [expanded, setExpanded] = useState(false)
+  const [busy, setBusy]         = useState(false)
   const req = item.restore_request
   if (!req) return null
 
@@ -13,6 +14,12 @@ function RestoreRequestPanel({ item }: { item: DeletedMemory }) {
     declined: { label: '你已拒绝',     border: '#93af8b', bg: '#e8ede4', color: '#4c6244' },
   }
   const cfg = statusCfg[req.status]
+
+  const resolve = async (status: 'accepted' | 'declined') => {
+    setBusy(true)
+    await api.resolveRestoreRequest(req.restoration_request_id, status)
+    onResolved()
+  }
 
   return (
     <div className="mt-3 rounded-xl p-3"
@@ -60,11 +67,13 @@ function RestoreRequestPanel({ item }: { item: DeletedMemory }) {
         </button>
         {req.status === 'pending' && (
           <div className="ml-auto flex gap-2">
-            <button className="font-hand text-sm px-3 py-1 rounded-lg transition-all"
+            <button disabled={busy} onClick={() => resolve('declined')}
+              className="font-hand text-sm px-3 py-1 rounded-lg transition-all disabled:opacity-50"
               style={{ background: '#deded2', border: '1.5px solid #93af8b', boxShadow: '2px 2px 0 #93af8b', color: '#4a4a3a' }}>
               拒绝
             </button>
-            <button className="font-hand text-sm px-3 py-1 rounded-lg transition-all"
+            <button disabled={busy} onClick={() => resolve('accepted')}
+              className="font-hand text-sm px-3 py-1 rounded-lg transition-all disabled:opacity-50"
               style={{ background: '#c8e0cc', border: '1.5px solid #5e7a55', boxShadow: '2px 2px 0 #5e7a55', color: '#3a5a40' }}>
               同意恢复
             </button>
@@ -75,7 +84,7 @@ function RestoreRequestPanel({ item }: { item: DeletedMemory }) {
   )
 }
 
-function DeletedItem({ item }: { item: DeletedMemory }) {
+function DeletedItem({ item, onResolved }: { item: DeletedMemory; onResolved: () => void }) {
   return (
     <div className="card p-4 opacity-75">
       <div className="flex items-center gap-2 mb-2">
@@ -91,14 +100,26 @@ function DeletedItem({ item }: { item: DeletedMemory }) {
       <p className="text-sm leading-relaxed line-through" style={{ color: '#93af8b', textDecorationColor: '#b5c9af' }}>
         {item.memory.content}
       </p>
-      {item.restore_request && <RestoreRequestPanel item={item} />}
+      {item.restore_request && <RestoreRequestPanel item={item} onResolved={onResolved} />}
     </div>
   )
 }
 
 export default function DeletedTab() {
-  const pending = deletedMemories.filter((d) => d.restore_request?.status === 'pending')
-  const others  = deletedMemories.filter((d) => !d.restore_request || d.restore_request.status !== 'pending')
+  const [items, setItems]   = useState<DeletedMemory[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const load = () => api.getDeleted().then(setItems).finally(() => setLoading(false))
+
+  useEffect(() => { load() }, [])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'restore_resolved' || e.type === 'memory_deleted') load()
+  }), [])
+
+  if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
+
+  const pending = items.filter((d) => d.restore_request?.status === 'pending')
+  const others  = items.filter((d) => !d.restore_request || d.restore_request.status !== 'pending')
 
   return (
     <div className="px-6 py-6 max-w-3xl space-y-8">
@@ -116,15 +137,23 @@ export default function DeletedTab() {
               {pending.length}
             </span>
           </div>
-          <div className="space-y-4">{pending.map((item) => <DeletedItem key={item.memory.id} item={item} />)}</div>
+          <div className="space-y-4">
+            {pending.map((item) => <DeletedItem key={item.memory.id} item={item} onResolved={load} />)}
+          </div>
         </section>
       )}
 
       {others.length > 0 && (
         <section>
           <h3 className="font-hand text-xl mb-3" style={{ color: '#75956b' }}>其他已删除记忆</h3>
-          <div className="space-y-4">{others.map((item) => <DeletedItem key={item.memory.id} item={item} />)}</div>
+          <div className="space-y-4">
+            {others.map((item) => <DeletedItem key={item.memory.id} item={item} onResolved={load} />)}
+          </div>
         </section>
+      )}
+
+      {items.length === 0 && (
+        <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>没有已删除的记忆</p>
       )}
     </div>
   )

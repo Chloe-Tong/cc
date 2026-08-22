@@ -1,8 +1,22 @@
-import { privateMemories } from '../../../data/mockMemories'
+import { useState, useEffect } from 'react'
+import { api, onWsEvent } from '../../../api/client'
+import type { Memory } from '../../../types/memory'
 
 export default function PrivatePsychTab() {
-  const shared   = privateMemories.filter((m) => m.visibility === 'shared')
-  const private_ = privateMemories.filter((m) => m.visibility === 'exists_only')
+  const [memories, setMemories] = useState<Memory[]>([])
+  const [loading, setLoading]   = useState(true)
+
+  const load = () => api.getPrivate().then(setMemories).finally(() => setLoading(false))
+
+  useEffect(() => { load() }, [])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'import_complete') load()
+  }), [])
+
+  if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
+
+  const shared   = memories.filter((m) => m.visibility === 'shared')
+  const private_ = memories.filter((m) => m.visibility === 'exists_only')
 
   return (
     <div className="px-6 py-6 max-w-3xl space-y-8">
@@ -68,7 +82,7 @@ export default function PrivatePsychTab() {
       )}
 
       <p className="font-hand text-center" style={{ color: '#b09088' }}>
-        共 {privateMemories.length} 条心理记录，其中 {private_.length} 条私密
+        共 {memories.length} 条心理记录，其中 {private_.length} 条私密
       </p>
     </div>
   )

@@ -1,4 +1,5 @@
-import { claims } from '../../../data/mockMemories'
+import { useState, useEffect } from 'react'
+import { api, onWsEvent } from '../../../api/client'
 import type { Claim } from '../../../types/memory'
 
 interface Props { search: string }
@@ -69,18 +70,24 @@ function ClaimCard({ claim }: { claim: Claim }) {
 }
 
 export default function FactsClaimsTab({ search }: Props) {
-  const filtered = claims.filter((c) => {
-    if (!search) return true
-    const q = search.toLowerCase()
-    return c.subject.toLowerCase().includes(q) || c.value.toLowerCase().includes(q) || c.evidence.toLowerCase().includes(q)
-  })
+  const [claims, setClaims] = useState<Claim[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const confirmed  = filtered.filter((c) => c.status === 'confirmed')
-  const candidates = filtered.filter((c) => c.status === 'candidate')
-  const denied     = filtered.filter((c) => c.status === 'denied')
+  const load = () => api.getClaims(search || undefined).then(setClaims).finally(() => setLoading(false))
+
+  useEffect(() => { load() }, [search])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'import_complete') load()
+  }), [])
+
+  if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
+
+  const confirmed  = claims.filter((c) => c.status === 'confirmed')
+  const candidates = claims.filter((c) => c.status === 'candidate')
+  const denied     = claims.filter((c) => c.status === 'denied')
 
   const conflictGroups = Object.entries(
-    filtered.reduce((acc, c) => {
+    claims.reduce((acc, c) => {
       const key = `${c.subject}·${c.predicate}`
       if (!acc[key]) acc[key] = []
       acc[key].push(c)

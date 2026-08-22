@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import LongTermMemoryTab from './tabs/LongTermMemoryTab'
 import EpisodicTab from './tabs/EpisodicTab'
 import PromisesTab from './tabs/PromisesTab'
@@ -6,28 +6,54 @@ import PrivatePsychTab from './tabs/PrivatePsychTab'
 import FactsClaimsTab from './tabs/FactsClaimsTab'
 import DeletedTab from './tabs/DeletedTab'
 import IdentityTab from './tabs/IdentityTab'
+import { api, onWsEvent } from '../../api/client'
 import {
   IconBooks, IconCamera, IconInfinity, IconHeart,
   IconScale, IconTrash, IconAnchor,
 } from '../icons/Icons'
 
 type TabIcon = (p: { size: number }) => JSX.Element
-
 type Tab = { id: string; label: string; Icon: TabIcon; badge?: number }
 
 const tabs: Tab[] = [
   { id: 'longterm',  label: '长期记忆',   Icon: IconBooks },
   { id: 'episodic',  label: '情景记忆',   Icon: IconCamera },
-  { id: 'promises',  label: '承诺',       Icon: IconInfinity, badge: 3 },
+  { id: 'promises',  label: '承诺',       Icon: IconInfinity },
   { id: 'private',   label: '私人心理',   Icon: IconHeart },
-  { id: 'facts',     label: '事实与冲突', Icon: IconScale, badge: 1 },
-  { id: 'deleted',   label: '删除与恢复', Icon: IconTrash, badge: 1 },
+  { id: 'facts',     label: '事实与冲突', Icon: IconScale },
+  { id: 'deleted',   label: '删除与恢复', Icon: IconTrash },
   { id: 'identity',  label: '身份锚点',   Icon: IconAnchor },
 ]
 
 export default function MemoryLibrary() {
-  const [activeTab, setActiveTab] = useState('longterm')
-  const [search, setSearch]       = useState('')
+  const [activeTab, setActiveTab]   = useState('longterm')
+  const [search, setSearch]         = useState('')
+  const [total, setTotal]           = useState<number | null>(null)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [importing, setImporting]   = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const loadStats = () =>
+    api.getStats().then((s) => { setTotal(s.total); setLastUpdated(s.last_updated) }).catch(() => {})
+
+  useEffect(() => { loadStats() }, [])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'import_complete' || e.type === 'memory_deleted') loadStats()
+  }), [])
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    try {
+      const result = await api.importJson(file)
+      if (result.errors?.length) console.warn('Import errors:', result.errors)
+      loadStats()
+    } finally {
+      setImporting(false)
+      e.target.value = ''
+    }
+  }
 
   return (
     <div className="flex h-full">
@@ -77,8 +103,27 @@ export default function MemoryLibrary() {
         </nav>
 
         <div className="px-4 pt-3" style={{ borderTop: '1px solid rgba(196,168,158,0.30)' }}>
-          <p className="font-hand text-sm" style={{ color: '#7a5a54' }}>共 14 条记忆</p>
-          <p className="font-hand text-xs mt-0.5" style={{ color: '#b09088' }}>2026-06-29</p>
+          <p className="font-hand text-sm" style={{ color: '#7a5a54' }}>
+            共 {total !== null ? total : '—'} 条记忆
+          </p>
+          {lastUpdated && (
+            <p className="font-hand text-xs mt-0.5" style={{ color: '#b09088' }}>
+              {new Date(lastUpdated).toLocaleDateString('zh-CN')}
+            </p>
+          )}
+
+          <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={importing}
+            className="mt-2 w-full font-hand text-xs py-1.5 rounded-lg transition-all disabled:opacity-50"
+            style={{
+              background: 'rgba(245,237,230,0.70)',
+              border: '1px solid #c4aea8',
+              color: '#7a5a54',
+            }}>
+            {importing ? '导入中…' : '导入 JSON'}
+          </button>
         </div>
       </aside>
 

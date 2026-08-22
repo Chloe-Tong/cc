@@ -1,4 +1,6 @@
-import { promiseMemories } from '../../../data/mockMemories'
+import { useState, useEffect } from 'react'
+import { api, onWsEvent } from '../../../api/client'
+import type { Memory } from '../../../types/memory'
 
 interface Props { search: string }
 
@@ -10,9 +12,18 @@ const statusCfg = {
 }
 
 export default function PromisesTab({ search }: Props) {
-  const promises = promiseMemories.filter((m) =>
-    !search || m.content.toLowerCase().includes(search.toLowerCase())
-  )
+  const [promises, setPromises] = useState<Memory[]>([])
+  const [loading, setLoading]   = useState(true)
+
+  const load = () => api.getPromises(search || undefined).then(setPromises).finally(() => setLoading(false))
+
+  useEffect(() => { load() }, [search])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'import_complete') load()
+  }), [])
+
+  if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
+
   const pending = promises.filter((m: any) => !m.promise_status || m.promise_status === 'pending')
   const done    = promises.filter((m: any) => m.promise_status === 'completed' || m.promise_status === 'cancelled')
 

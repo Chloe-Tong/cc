@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { identityAnchors } from '../../../data/mockMemories'
+import { useState, useEffect } from 'react'
+import { api, onWsEvent } from '../../../api/client'
 import type { IdentityAnchor } from '../../../types/memory'
 
 const statusCfg = {
@@ -83,6 +83,18 @@ function AnchorCard({ anchor }: { anchor: IdentityAnchor }) {
 }
 
 export default function IdentityTab() {
+  const [anchors, setAnchors] = useState<IdentityAnchor[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const load = () => api.getIdentityAnchors().then(setAnchors).finally(() => setLoading(false))
+
+  useEffect(() => { load() }, [])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'import_complete') load()
+  }), [])
+
+  if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
+
   return (
     <div className="px-6 py-6 max-w-3xl space-y-6">
       <div className="card p-4 text-sm leading-relaxed" style={{ color: '#4c6244' }}>
@@ -91,8 +103,12 @@ export default function IdentityTab() {
       </div>
 
       <div className="space-y-3">
-        {identityAnchors.map((anchor) => <AnchorCard key={anchor.anchor_id} anchor={anchor} />)}
+        {anchors.map((anchor) => <AnchorCard key={anchor.anchor_id} anchor={anchor} />)}
       </div>
+
+      {anchors.length === 0 && (
+        <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>暂无身份锚点</p>
+      )}
 
       <p className="font-hand text-center" style={{ color: '#93af8b' }}>
         伴侣拥有决定结束恋爱关系的权力，关系变更需来自持续心理历史与明确反思

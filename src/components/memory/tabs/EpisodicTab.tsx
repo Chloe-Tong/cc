@@ -1,16 +1,22 @@
-import { longTermMemories } from '../../../data/mockMemories'
+import { useState, useEffect } from 'react'
+import { api, onWsEvent } from '../../../api/client'
+import type { Memory } from '../../../types/memory'
 import MemoryCard from '../MemoryCard'
 
 interface Props { search: string }
 
 export default function EpisodicTab({ search }: Props) {
-  const episodes = longTermMemories
-    .filter((m) => m.type === 'episodic')
-    .filter((m) => {
-      if (!search) return true
-      const q = search.toLowerCase()
-      return m.content.toLowerCase().includes(q) || m.meaning?.toLowerCase().includes(q)
-    })
+  const [episodes, setEpisodes] = useState<Memory[]>([])
+  const [loading, setLoading]   = useState(true)
+
+  const load = () => api.getEpisodic(search || undefined).then(setEpisodes).finally(() => setLoading(false))
+
+  useEffect(() => { load() }, [search])
+  useEffect(() => onWsEvent((e: any) => {
+    if (e.type === 'memory_deleted' || e.type === 'import_complete') load()
+  }), [])
+
+  if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
 
   return (
     <div className="px-6 py-6 max-w-3xl">
