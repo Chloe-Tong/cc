@@ -3,35 +3,69 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  --ink: #1e2118;
+  --cream: #f5f0e4;
+  --sage: #75956b;
+  --gold: #c4983a;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: #0d0d0f;
-  color: #e8e6e3;
+  background: #d2dece;
+  color: #1e2118;
   font-family: 'Noto Sans SC', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #b5c9af; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #93af8b; }
+
+/* Hand-drawn card base */
+.card {
+  background: #f5f0e4;
+  border: 1.5px solid #1e2118;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #1e2118;
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+.card:hover {
+  box-shadow: 4px 4px 0 #1e2118;
+  transform: translate(-0.5px, -0.5px);
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+/* Underline accent */
+.gold-underline {
+  display: inline-block;
+  position: relative;
 }
-
-::-webkit-scrollbar-thumb {
-  background: #2a2a30;
+.gold-underline::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -3px;
+  width: 100%; height: 3px;
+  background: #c4983a;
   border-radius: 2px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #3a3a44;
+/* Sketchy divider */
+.sketch-divider {
+  border: none;
+  border-top: 1.5px solid #b5c9af;
+  margin: 16px 0;
+}
+
+/* Tag pill */
+.tag {
+  font-family: 'Caveat', cursive;
+  font-size: 13px;
+  padding: 1px 10px;
+  border-radius: 20px;
+  border: 1.5px solid currentColor;
+  display: inline-flex;
+  align-items: center;
 }

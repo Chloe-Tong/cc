@@ -1,23 +1,27 @@
 import type { Memory } from '../../types/memory'
 
-const typeLabels: Record<string, string> = {
-  fact: '事实',
-  episodic: '情景',
-  relationship: '关系',
-  promise: '承诺',
-  private_psychology: '私人心理',
-  relationship_self_understanding: '关系理解',
-  historical_psychology: '历史心理',
+const typeConfig: Record<string, { label: string; color: string; bg: string }> = {
+  fact:                        { label: '事实',   color: '#4c6244', bg: '#d2dece' },
+  episodic:                    { label: '情景',   color: '#5e4a2a', bg: '#e8dcc8' },
+  relationship:                { label: '关系',   color: '#2a4a5e', bg: '#c8d8e8' },
+  promise:                     { label: '承诺',   color: '#3a5a40', bg: '#c8e0cc' },
+  private_psychology:          { label: '私人心理', color: '#5e2a3a', bg: '#e8c8d0' },
+  relationship_self_understanding: { label: '关系理解', color: '#4a3a5e', bg: '#d8d0e8' },
+  historical_psychology:       { label: '历史心理', color: '#4a4a3a', bg: '#deded2' },
 }
 
-const typeColors: Record<string, string> = {
-  fact: 'bg-blue-500/10 text-blue-300 border-blue-500/20',
-  episodic: 'bg-violet-500/10 text-violet-300 border-violet-500/20',
-  relationship: 'bg-amber-500/10 text-amber-300 border-amber-500/20',
-  promise: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-  private_psychology: 'bg-rose-500/10 text-rose-300 border-rose-500/20',
-  relationship_self_understanding: 'bg-pink-500/10 text-pink-300 border-pink-500/20',
-  historical_psychology: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
+function highlightText(text: string, query: string) {
+  if (!query) return <>{text}</>
+  const parts = text.split(new RegExp(`(${query})`, 'gi'))
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase()
+          ? <mark key={i} style={{ background: '#c4983a', color: '#1e2118', borderRadius: 3, padding: '0 2px' }}>{part}</mark>
+          : part
+      )}
+    </>
+  )
 }
 
 interface Props {
@@ -26,56 +30,45 @@ interface Props {
   highlight?: string
 }
 
-function highlightText(text: string, query: string) {
-  if (!query) return text
-  const parts = text.split(new RegExp(`(${query})`, 'gi'))
-  return parts.map((part, i) =>
-    part.toLowerCase() === query.toLowerCase()
-      ? <mark key={i} className="bg-rose-500/30 text-rose-200 rounded px-0.5">{part}</mark>
-      : part
-  )
-}
-
 export default function MemoryCard({ memory, showType = true, highlight = '' }: Props) {
-  const typeColor = typeColors[memory.type] || typeColors.fact
-  const typeLabel = typeLabels[memory.type] || memory.type
-
-  const date = memory.updated_at || memory.created_at
-  const dateStr = new Date(date).toLocaleDateString('zh-CN', {
+  const cfg = typeConfig[memory.type] || typeConfig.fact
+  const dateStr = new Date(memory.updated_at || memory.created_at).toLocaleDateString('zh-CN', {
     year: 'numeric', month: 'short', day: 'numeric',
   })
 
   return (
-    <div className="group bg-white/[0.03] border border-white/6 rounded-xl p-4 hover:bg-white/[0.05] hover:border-white/10 transition-all duration-150">
+    <div className="card p-4">
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           {showType && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${typeColor}`}>
-                {typeLabel}
+            <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+              <span className="tag font-hand" style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.color }}>
+                {cfg.label}
               </span>
               {memory.tags?.map((tag) => (
-                <span key={tag} className="text-xs text-zinc-600 px-1.5 py-0.5 bg-white/4 rounded-full">
+                <span key={tag} className="font-hand text-xs px-2 py-0.5 rounded-full"
+                  style={{ color: '#5e7a55', background: '#c8d5c2', border: '1px solid #93af8b' }}>
                   {tag}
                 </span>
               ))}
             </div>
           )}
 
-          <p className="text-sm text-zinc-200 leading-relaxed">
+          <p className="text-sm leading-relaxed" style={{ color: '#1e2118' }}>
             {highlightText(memory.content, highlight)}
           </p>
 
           {memory.meaning && (
-            <div className="mt-2.5 pl-3 border-l-2 border-zinc-700">
-              <p className="text-xs text-zinc-400 leading-relaxed italic">
+            <div className="mt-2.5 pl-3" style={{ borderLeft: '3px solid #c4983a' }}>
+              <p className="text-xs leading-relaxed italic" style={{ color: '#4c6244' }}>
                 {highlightText(memory.meaning, highlight)}
               </p>
             </div>
           )}
 
           {memory.relationship_effect && (
-            <p className="mt-2 text-xs text-rose-400/80 leading-relaxed">
+            <p className="mt-2 text-xs leading-relaxed font-hand text-base"
+              style={{ color: '#5e7a55' }}>
               ↳ {memory.relationship_effect}
             </p>
           )}
@@ -83,22 +76,21 @@ export default function MemoryCard({ memory, showType = true, highlight = '' }: 
           {memory.source_refs.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {memory.source_refs.map((ref) => (
-                <button
-                  key={ref.seq}
-                  title={ref.preview}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 bg-white/4 hover:bg-white/8 px-2 py-0.5 rounded-full transition-colors"
-                >
+                <button key={ref.seq}
+                  className="font-hand text-sm px-2.5 py-0.5 rounded-full transition-all"
+                  style={{
+                    background: '#e8ede4', border: '1px solid #93af8b',
+                    color: '#5e7a55', boxShadow: '1px 1px 0 #93af8b',
+                  }}>
                   #{ref.seq}
-                  {ref.preview && <span className="ml-1 opacity-60">· {ref.preview.slice(0, 12)}…</span>}
+                  {ref.preview && <span style={{ opacity: 0.6 }}> · {ref.preview.slice(0, 10)}…</span>}
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <div className="shrink-0 text-right">
-          <p className="text-xs text-zinc-600">{dateStr}</p>
-        </div>
+        <p className="font-hand text-sm shrink-0" style={{ color: '#93af8b' }}>{dateStr}</p>
       </div>
     </div>
   )
