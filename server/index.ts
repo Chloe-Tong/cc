@@ -4,6 +4,7 @@ import multipart from '@fastify/multipart'
 import websocket from '@fastify/websocket'
 import { db, rowToMemory, rowToClaim, rowToDeletedMemory } from './db.ts'
 import { importMemoriesJson } from './import.ts'
+import { startLogWatcher, resolveLogPath } from './logWatcher.ts'
 
 const app = Fastify({ logger: false })
 
@@ -186,7 +187,34 @@ app.post('/api/import', async (req, reply) => {
   return result
 })
 
-// ── Seed check & boot ──────────────────────────────────────────────────────
+// ── Recent events log ─────────────────────────────────────────────────────
+app.get('/api/events', async (req) => {
+  const { limit = '50', after_seq } = req.query as { limit?: string; after_seq?: string }
+  const n = Math.min(Number(limit), 200)
+  let rows: any[]
+  if (after_seq) {
+    rows = db.prepare('SELECT * FROM events WHERE seq > ? ORDER BY seq DESC LIMIT ?').all(Number(after_seq), n)
+  } else {
+    rows = db.prepare('SELECT * FROM events ORDER BY seq DESC LIMIT ?').all(n)
+  }
+  return rows.map((r) => ({ ...r, content: JSON.parse(r.content), metadata: JSON.parse(r.metadata) }))
+})
+
+// ── Log watcher info ──────────────────────────────────────────────────────
+app.get('/api/log-status', async () => {
+  const { existsSync, statSync } = await import('node:fs')
+  const path = resolveLogPath()
+  const exists = existsSync(path)
+  return {
+    log_file: path,
+    exists,
+    size_bytes: exists ? statSync(path).size : 0,
+  }
+})
+
+// ── Boot ───────────────────────────────────────────────────────────────────
 const PORT = Number(process.env.PORT ?? 3001)
 await app.listen({ port: PORT, host: '0.0.0.0' })
 console.log(`Memory server running on http://localhost:${PORT}`)
+
+startLogWatcher(broadcast)
