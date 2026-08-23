@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
 import MemoryCard from '../MemoryCard'
+import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
 
 interface Props { search: string }
 
@@ -21,8 +22,9 @@ function SectionHeader({ title, desc, count }: { title: string; desc: string; co
 }
 
 export default function LongTermMemoryTab({ search }: Props) {
-  const [memories, setMemories] = useState<Memory[]>([])
-  const [loading, setLoading]   = useState(true)
+  const [memories, setMemories]     = useState<Memory[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [selectedTags, setSelected] = useState<string[]>([])
 
   const load = () => api.getLongterm(search || undefined).then(setMemories).finally(() => setLoading(false))
 
@@ -33,11 +35,18 @@ export default function LongTermMemoryTab({ search }: Props) {
 
   if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#93af8b' }}>加载中…</div>
 
-  const facts = memories.filter((m) => m.type === 'fact')
-  const rels   = memories.filter((m) => m.type === 'relationship' || m.type === 'relationship_self_understanding')
+  const visible = filterByTags(memories, selectedTags)
+  const facts = visible.filter((m) => m.type === 'fact')
+  const rels  = visible.filter((m) => m.type === 'relationship' || m.type === 'relationship_self_understanding')
 
   return (
     <div className="px-6 py-6 space-y-8 max-w-3xl">
+      <TagFilterBar
+        allTags={extractTags(memories)}
+        selected={selectedTags}
+        onToggle={(t) => setSelected((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t])}
+        onClear={() => setSelected([])}
+      />
       {memories.length === 0 && (
         <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>没有找到匹配的记忆</p>
       )}

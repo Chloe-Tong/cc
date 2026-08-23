@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
+import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
 
 export default function PrivatePsychTab() {
-  const [memories, setMemories] = useState<Memory[]>([])
-  const [loading, setLoading]   = useState(true)
+  const [memories, setMemories]     = useState<Memory[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [selectedTags, setSelected] = useState<string[]>([])
 
   const load = () => api.getPrivate().then(setMemories).finally(() => setLoading(false))
 
@@ -15,11 +17,18 @@ export default function PrivatePsychTab() {
 
   if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
 
-  const shared   = memories.filter((m) => m.visibility === 'shared')
-  const private_ = memories.filter((m) => m.visibility === 'exists_only')
+  const visible  = filterByTags(memories, selectedTags)
+  const shared   = visible.filter((m) => m.visibility === 'shared')
+  const private_ = visible.filter((m) => m.visibility === 'exists_only')
 
   return (
     <div className="px-6 py-6 max-w-3xl space-y-8">
+      <TagFilterBar
+        allTags={extractTags(memories)}
+        selected={selectedTags}
+        onToggle={(t) => setSelected((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t])}
+        onClear={() => setSelected([])}
+      />
       <div className="card p-4 text-sm leading-relaxed" style={{ color: '#6a4a44' }}>
         私人心理记录由伴侣自主生成与保管。标记为私密的条目仅显示存在，内容由伴侣决定是否分享。
       </div>

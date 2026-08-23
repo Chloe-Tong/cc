@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
 
+import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
+
 interface Props { search: string }
 
 const statusCfg = {
@@ -12,8 +14,9 @@ const statusCfg = {
 }
 
 export default function PromisesTab({ search }: Props) {
-  const [promises, setPromises] = useState<Memory[]>([])
-  const [loading, setLoading]   = useState(true)
+  const [promises, setPromises]     = useState<Memory[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [selectedTags, setSelected] = useState<string[]>([])
 
   const load = () => api.getPromises(search || undefined).then(setPromises).finally(() => setLoading(false))
 
@@ -24,11 +27,18 @@ export default function PromisesTab({ search }: Props) {
 
   if (loading) return <div className="px-6 py-12 font-hand text-center" style={{ color: '#c4aea8' }}>加载中…</div>
 
-  const pending = promises.filter((m: any) => !m.promise_status || m.promise_status === 'pending')
-  const done    = promises.filter((m: any) => m.promise_status === 'completed' || m.promise_status === 'cancelled')
+  const visible = filterByTags(promises, selectedTags)
+  const pending = visible.filter((m: any) => !m.promise_status || m.promise_status === 'pending')
+  const done    = visible.filter((m: any) => m.promise_status === 'completed' || m.promise_status === 'cancelled')
 
   return (
     <div className="px-6 py-6 max-w-3xl space-y-8">
+      <TagFilterBar
+        allTags={extractTags(promises)}
+        selected={selectedTags}
+        onToggle={(t) => setSelected((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t])}
+        onClear={() => setSelected([])}
+      />
       {pending.length > 0 && (
         <section>
           <h3 className="font-hand text-xl font-semibold mb-1" style={{ color: '#1e2118' }}>待跟进</h3>
