@@ -1,4 +1,4 @@
-import type { Memory, Claim, DeletedMemory, IdentityAnchor } from '../types/memory'
+import type { Memory, Claim, DeletedMemory, IdentityAnchor, LogEvent } from '../types/memory'
 
 const BASE = '/api'
 
@@ -17,6 +17,7 @@ export const api = {
   getDeleted:        ()                => get<DeletedMemory[]>('/deleted'),
   getIdentityAnchors:()                => get<IdentityAnchor[]>('/identity-anchors'),
   getStats:          ()                => get<{ total: number; last_updated: string | null }>('/stats'),
+  getEvents:         (limit = 60)     => get<LogEvent[]>(`/events?limit=${limit}`),
 
   deleteMemory: (id: string) =>
     fetch(`${BASE}/memories/${id}`, { method: 'DELETE' }).then((r) => r.json()),

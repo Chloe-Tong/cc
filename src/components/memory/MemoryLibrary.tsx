@@ -11,6 +11,7 @@ import {
   IconBooks, IconCamera, IconInfinity, IconHeart,
   IconScale, IconTrash, IconAnchor,
 } from '../icons/Icons'
+import EventFeedPanel from './EventFeedPanel'
 
 type TabIcon = (p: { size: number }) => JSX.Element
 type Tab = { id: string; label: string; Icon: TabIcon; badge?: number }
@@ -31,6 +32,7 @@ export default function MemoryLibrary() {
   const [total, setTotal]           = useState<number | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [importing, setImporting]   = useState(false)
+  const [eventOpen, setEventOpen]   = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const loadStats = () =>
@@ -128,7 +130,7 @@ export default function MemoryLibrary() {
       </aside>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         <div className="px-6 py-4 shrink-0" style={{ borderBottom: '1px solid rgba(196,168,158,0.25)' }}>
           <div className="relative max-w-sm">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09088' }}>🔍</span>
@@ -143,7 +145,7 @@ export default function MemoryLibrary() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {activeTab === 'longterm'  && <LongTermMemoryTab search={search} />}
           {activeTab === 'episodic'  && <EpisodicTab search={search} />}
           {activeTab === 'promises'  && <PromisesTab search={search} />}
@@ -152,6 +154,8 @@ export default function MemoryLibrary() {
           {activeTab === 'deleted'   && <DeletedTab />}
           {activeTab === 'identity'  && <IdentityTab />}
         </div>
+
+        <EventFeedPanel open={eventOpen} onToggle={() => setEventOpen((v) => !v)} />
       </div>
     </div>
   )

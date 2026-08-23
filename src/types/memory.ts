@@ -102,3 +102,14 @@ export interface DeletedMemory {
   deleted_by: 'user' | 'ai'
   restore_request?: RestoreRequest
 }
+
+export interface LogEvent {
+  id: number
+  event_id: string
+  seq: number
+  timestamp: string
+  actor: string
+  event_type: string
+  content: Record<string, unknown>
+  metadata: Record<string, unknown>
+}
