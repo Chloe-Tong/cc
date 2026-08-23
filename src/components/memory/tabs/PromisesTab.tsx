@@ -3,6 +3,7 @@ import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
 
 import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
+import EmptyState from '../EmptyState'
 
 interface Props { search: string }
 
@@ -104,9 +105,12 @@ export default function PromisesTab({ search }: Props) {
       )}
 
       {promises.length === 0 && (
-        <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>
-          没有找到匹配的承诺记录
-        </p>
+        <EmptyState icon="∞" title="还没有承诺"
+          subtitle="彼此的约定与心意，会在这里一一列出" />
+      )}
+      {promises.length > 0 && visible.length === 0 && (
+        <EmptyState icon="🔍" title="没有找到匹配的承诺"
+          subtitle={selectedTags.length > 0 ? '换个标签试试' : '试试其他关键词'} />
       )}
     </div>
   )

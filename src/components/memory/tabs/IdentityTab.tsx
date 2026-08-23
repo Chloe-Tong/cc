@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
 import type { IdentityAnchor } from '../../../types/memory'
+import EmptyState from '../EmptyState'
 
 const statusCfg = {
   stable:   { label: '稳定',   dot: '#5e7a55', color: '#3a5a40', bg: '#c8e0cc', border: '#5e7a55' },
@@ -107,7 +108,8 @@ export default function IdentityTab() {
       </div>
 
       {anchors.length === 0 && (
-        <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>暂无身份锚点</p>
+        <EmptyState icon="⚓" title="还没有身份锚点"
+          subtitle="伴侣对自我的核心认识会在这里固定，每次变更都有迹可循" />
       )}
 
       <p className="font-hand text-center" style={{ color: '#93af8b' }}>

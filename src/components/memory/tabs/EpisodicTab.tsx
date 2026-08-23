@@ -3,6 +3,7 @@ import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
 import MemoryCard from '../MemoryCard'
 import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
+import EmptyState from '../EmptyState'
 
 interface Props { search: string }
 
@@ -34,10 +35,13 @@ export default function EpisodicTab({ search }: Props) {
         onClear={() => setSelected([])}
       />
 
-      {visible.length === 0 && (
-        <p className="font-hand text-lg text-center py-12" style={{ color: '#c4aea8' }}>
-          没有找到匹配的情景记忆
-        </p>
+      {episodes.length === 0 && (
+        <EmptyState icon="📷" title="还没有情景记忆"
+          subtitle="每一次共同经历都会被记录在这条时间线上" />
+      )}
+      {episodes.length > 0 && visible.length === 0 && (
+        <EmptyState icon="🔍" title="没有找到匹配的记忆"
+          subtitle={selectedTags.length > 0 ? '换个标签试试' : '试试其他关键词'} />
       )}
 
       <div className="relative pl-8">

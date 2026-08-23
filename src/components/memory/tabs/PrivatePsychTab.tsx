@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
 import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
+import EmptyState from '../EmptyState'
 
 export default function PrivatePsychTab() {
   const [memories, setMemories]     = useState<Memory[]>([])
@@ -90,9 +91,19 @@ export default function PrivatePsychTab() {
         </section>
       )}
 
-      <p className="font-hand text-center" style={{ color: '#b09088' }}>
-        共 {memories.length} 条心理记录，其中 {private_.length} 条私密
-      </p>
+      {memories.length === 0 && (
+        <EmptyState icon="🫀" title="还没有心理记录"
+          subtitle="伴侣的内心世界会在这里留下痕迹" />
+      )}
+      {memories.length > 0 && visible.length === 0 && (
+        <EmptyState icon="🔍" title="没有找到匹配的记录"
+          subtitle="换个标签试试" />
+      )}
+      {memories.length > 0 && (
+        <p className="font-hand text-center" style={{ color: '#b09088' }}>
+          共 {memories.length} 条心理记录，其中 {private_.length} 条私密
+        </p>
+      )}
     </div>
   )
 }

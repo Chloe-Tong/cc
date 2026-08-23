@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
 import { toast } from '../../../toast'
+import EmptyState from '../EmptyState'
 import type { DeletedMemory } from '../../../types/memory'
 
 function RestoreRequestPanel({ item, onResolved }: { item: DeletedMemory; onResolved: () => void }) {
@@ -163,7 +164,8 @@ export default function DeletedTab() {
       )}
 
       {items.length === 0 && (
-        <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>没有已删除的记忆</p>
+        <EmptyState icon="🗑" title="没有已删除的记忆"
+          subtitle="删除的记忆会以审计状态保留在这里，不进入上下文" />
       )}
     </div>
   )

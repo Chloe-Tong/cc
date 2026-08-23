@@ -69,6 +69,8 @@ function ClaimCard({ claim }: { claim: Claim }) {
   )
 }
 
+import EmptyState from '../EmptyState'
+
 export default function FactsClaimsTab({ search }: Props) {
   const [claims, setClaims] = useState<Claim[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,6 +96,13 @@ export default function FactsClaimsTab({ search }: Props) {
       return acc
     }, {} as Record<string, Claim[]>)
   ).filter(([, g]) => g.length > 1)
+
+  if (claims.length === 0) {
+    return search
+      ? <EmptyState icon="🔍" title="没有找到相关断言" subtitle="试试其他关键词" />
+      : <EmptyState icon="⚖️" title="还没有事实断言"
+          subtitle="对话中出现的可验证信息会在这里积累，并自动检测冲突" />
+  }
 
   return (
     <div className="px-6 py-6 max-w-3xl space-y-8">

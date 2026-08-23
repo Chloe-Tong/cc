@@ -3,6 +3,7 @@ import { api, onWsEvent } from '../../../api/client'
 import type { Memory } from '../../../types/memory'
 import MemoryCard from '../MemoryCard'
 import TagFilterBar, { extractTags, filterByTags } from '../TagFilterBar'
+import EmptyState from '../EmptyState'
 
 interface Props { search: string }
 
@@ -48,7 +49,12 @@ export default function LongTermMemoryTab({ search }: Props) {
         onClear={() => setSelected([])}
       />
       {memories.length === 0 && (
-        <p className="font-hand text-lg text-center py-12" style={{ color: '#93af8b' }}>没有找到匹配的记忆</p>
+        <EmptyState icon="📚" title="还没有长期记忆"
+          subtitle="开始对话后，事实与关系理解会在这里慢慢积累" />
+      )}
+      {memories.length > 0 && visible.length === 0 && (
+        <EmptyState icon="🔍" title="没有找到匹配的记忆"
+          subtitle={selectedTags.length > 0 ? '换个标签试试' : '试试其他关键词'} />
       )}
       {facts.length > 0 && (
         <section>
