@@ -7,6 +7,7 @@ import FactsClaimsTab from './tabs/FactsClaimsTab'
 import DeletedTab from './tabs/DeletedTab'
 import IdentityTab from './tabs/IdentityTab'
 import { api, onWsEvent } from '../../api/client'
+import { toast } from '../../toast'
 import {
   IconBooks, IconCamera, IconInfinity, IconHeart,
   IconScale, IconTrash, IconAnchor,
@@ -49,8 +50,14 @@ export default function MemoryLibrary() {
     setImporting(true)
     try {
       const result = await api.importJson(file)
-      if (result.errors?.length) console.warn('Import errors:', result.errors)
+      if (result.errors?.length) {
+        toast.error(`导入完成，${result.errors.length} 条出错`)
+      } else {
+        toast.success(`导入成功：${result.memories_imported ?? 0} 条记忆`)
+      }
       loadStats()
+    } catch {
+      toast.error('导入失败，请检查文件格式')
     } finally {
       setImporting(false)
       e.target.value = ''

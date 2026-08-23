@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api, onWsEvent } from '../../../api/client'
+import { toast } from '../../../toast'
 import type { DeletedMemory } from '../../../types/memory'
 
 function RestoreRequestPanel({ item, onResolved }: { item: DeletedMemory; onResolved: () => void }) {
@@ -17,8 +18,17 @@ function RestoreRequestPanel({ item, onResolved }: { item: DeletedMemory; onReso
 
   const resolve = async (status: 'accepted' | 'declined') => {
     setBusy(true)
-    await api.resolveRestoreRequest(req.restoration_request_id, status)
-    onResolved()
+    try {
+      await api.resolveRestoreRequest(req.restoration_request_id, status)
+      toast[status === 'accepted' ? 'success' : 'info'](
+        status === 'accepted' ? '已同意恢复记忆' : '已拒绝恢复请求'
+      )
+      onResolved()
+    } catch {
+      toast.error('操作失败，请重试')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (

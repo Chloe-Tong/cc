@@ -2,6 +2,7 @@ import { useState } from 'react'
 import AppLayout from './components/layout/AppLayout'
 import MemoryLibrary from './components/memory/MemoryLibrary'
 import ChatPage from './pages/ChatPage'
+import ToastContainer from './components/ToastContainer'
 
 export type NavSection = 'chat' | 'memory' | 'work' | 'settings'
 
@@ -9,6 +10,8 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<NavSection>('memory')
 
   return (
+    <>
+    <ToastContainer />
     <AppLayout activeSection={activeSection} onNavigate={setActiveSection}>
       {activeSection === 'chat' && <ChatPage />}
       {activeSection === 'memory' && <MemoryLibrary />}
@@ -23,5 +26,6 @@ export default function App() {
         </div>
       )}
     </AppLayout>
+    </>
   )
 }
