@@ -19,6 +19,17 @@ export const api = {
   getStats:          ()                => get<{ total: number; last_updated: string | null }>('/stats'),
   getEvents:         (limit = 60)     => get<LogEvent[]>(`/events?limit=${limit}`),
 
+  createMemory: (body: {
+    type: string; content: string; meaning?: string
+    relationship_effect?: string; tags?: string[]
+    visibility?: string; promise_status?: string; due_hint?: string
+  }) =>
+    fetch(`${BASE}/memories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then((r) => r.json()),
+
   deleteMemory: (id: string) =>
     fetch(`${BASE}/memories/${id}`, { method: 'DELETE' }).then((r) => r.json()),
 

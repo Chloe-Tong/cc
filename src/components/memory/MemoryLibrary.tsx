@@ -13,6 +13,7 @@ import {
   IconScale, IconTrash, IconAnchor,
 } from '../icons/Icons'
 import EventFeedPanel from './EventFeedPanel'
+import NewMemoryModal from './NewMemoryModal'
 
 type TabIcon = (p: { size: number }) => JSX.Element
 type Tab = { id: string; label: string; Icon: TabIcon; badge?: number }
@@ -34,6 +35,7 @@ export default function MemoryLibrary() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [importing, setImporting]   = useState(false)
   const [eventOpen, setEventOpen]   = useState(false)
+  const [newOpen, setNewOpen]       = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const loadStats = () =>
@@ -121,11 +123,22 @@ export default function MemoryLibrary() {
             </p>
           )}
 
+          <button
+            onClick={() => setNewOpen(true)}
+            className="mt-2 w-full font-hand text-xs py-1.5 rounded-lg transition-all"
+            style={{
+              background: 'rgba(176,144,136,0.18)',
+              border: '1px solid #b09088',
+              color: '#7a5a54',
+            }}>
+            ＋ 新增记忆
+          </button>
+
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
           <button
             onClick={() => fileRef.current?.click()}
             disabled={importing}
-            className="mt-2 w-full font-hand text-xs py-1.5 rounded-lg transition-all disabled:opacity-50"
+            className="mt-1.5 w-full font-hand text-xs py-1.5 rounded-lg transition-all disabled:opacity-50"
             style={{
               background: 'rgba(245,237,230,0.70)',
               border: '1px solid #c4aea8',
@@ -133,6 +146,10 @@ export default function MemoryLibrary() {
             }}>
             {importing ? '导入中…' : '导入 JSON'}
           </button>
+
+          {newOpen && (
+            <NewMemoryModal onClose={() => setNewOpen(false)} onCreated={loadStats} />
+          )}
         </div>
       </aside>
 

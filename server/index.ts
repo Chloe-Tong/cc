@@ -152,6 +152,39 @@ app.patch('/api/restore-requests/:id', async (req, reply) => {
   return { ok: true }
 })
 
+// ── Create a memory directly ──────────────────────────────────────────────
+app.post('/api/memories', async (req, reply) => {
+  const b = req.body as Record<string, unknown>
+  if (!b.type || !b.content) return reply.code(400).send({ error: 'type and content required' })
+
+  const id  = `mem_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+  const now = new Date().toISOString()
+
+  db.prepare(`
+    INSERT INTO memories
+    (id, type, content, meaning, relationship_effect, source_refs, created_at, updated_at,
+     status, visibility, tags, promise_status, due_hint, fulfilled_at)
+    VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?,?)
+  `).run(
+    id,
+    String(b.type),
+    String(b.content),
+    b.meaning           ? String(b.meaning)           : null,
+    b.relationship_effect ? String(b.relationship_effect) : null,
+    '[]',
+    now, null,
+    'active',
+    b.visibility ? String(b.visibility) : 'shared',
+    b.tags ? JSON.stringify(b.tags) : '[]',
+    b.promise_status ? String(b.promise_status) : null,
+    b.due_hint       ? String(b.due_hint)       : null,
+    null,
+  )
+
+  broadcast({ type: 'memory_create', memory_id: id })
+  return reply.code(201).send({ id })
+})
+
 // ── Soft-delete a memory ───────────────────────────────────────────────────
 app.delete('/api/memories/:id', async (req, reply) => {
   const { id } = req.params as { id: string }
