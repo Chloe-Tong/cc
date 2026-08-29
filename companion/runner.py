@@ -155,7 +155,7 @@ def _run_claude(prompt: str, system: str = "", mcp_server: str | None = None) ->
     """调用 `claude -p` 并返回输出文本。"""
     cmd = ["claude", "-p", prompt]
     if system:
-        cmd += ["--system", system]
+        cmd += ["--system-prompt", system]
     if mcp_server:
         cmd += ["--mcp-config", _mcp_config(mcp_server)]
 
