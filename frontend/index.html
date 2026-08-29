@@ -772,6 +772,25 @@ body::after {
   margin-bottom: 12px;
 }
 
+.del-tab {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--cream-border);
+  background: var(--cream-card);
+  color: var(--taupe);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.del-tab.active {
+  background: var(--blue-dark);
+  color: var(--cream);
+  border-color: var(--blue-dark);
+}
+.del-tab:hover:not(.active) { background: var(--cream-hover); }
+
 .del-btn {
   width: 100%;
   padding: 10px;
@@ -1360,18 +1379,26 @@ body::after {
       </div>
 
       <!-- 说明栏 -->
-      <div class="info-box" style="margin:0 0 12px;">
+      <div class="info-box" style="margin:0 0 0;">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--blue-dark)" stroke-width="1.4" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 6v4M6.5 4v.5"/></svg>
         <span>勾选想删除的具体记忆条目，提交后林会收到通知——只有他同意才会执行删除。</span>
+      </div>
+
+      <!-- 层级过滤标签 -->
+      <div id="del-tabs" style="display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--cream-border);overflow-x:auto;">
+        <button class="del-tab active" onclick="setDelFilter('all',this)">全部</button>
+        <button class="del-tab" onclick="setDelFilter('recent',this)">近期 · 7天内</button>
+        <button class="del-tab" onclick="setDelFilter('mid',this)">中景 · 7–30天</button>
+        <button class="del-tab" onclick="setDelFilter('old',this)">更早</button>
       </div>
 
       <!-- 列表头 -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;border-bottom:1px solid var(--cream-border);">
         <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--taupe);cursor:pointer;">
           <input type="checkbox" id="del-select-all" onchange="toggleDelAll(this)" style="accent-color:var(--blue-dark);cursor:pointer;">
-          全选当前页
+          全选当前视图
         </label>
-        <span style="font-size:11px;color:var(--taupe);">共 <span id="del-total">—</span> 条</span>
+        <span style="font-size:11px;color:var(--taupe);">当前视图 <span id="del-total">—</span> 条</span>
       </div>
 
       <!-- 可滚动列表 -->
@@ -1413,60 +1440,112 @@ body::after {
   }
 
   // ── 删除管理页 ────────────────────────────────────────────────
-  let _delItems = []; // { seq, actor, content, ts }
+  let _delItems = [];       // 全量 { seq, actor, content, ts }
+  let _selectedSeqs = new Set(); // 跨标签持久化选中
+  let _delFilter = 'all';   // 'all' | 'recent' | 'mid' | 'old'
+
+  const _NOW_S = () => Date.now() / 1000;
+  const _DAY = 86400;
+
+  function _filteredItems() {
+    const now = _NOW_S();
+    return _delItems.filter(e => {
+      if (_delFilter === 'all') return true;
+      const age = now - (e.ts || 0);
+      if (_delFilter === 'recent') return age <= 7 * _DAY;
+      if (_delFilter === 'mid')    return age > 7 * _DAY && age <= 30 * _DAY;
+      if (_delFilter === 'old')    return age > 30 * _DAY;
+      return true;
+    });
+  }
+
+  function setDelFilter(f, btn) {
+    _delFilter = f;
+    document.querySelectorAll('.del-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    _renderDelList();
+  }
 
   async function loadDelList() {
-    const data = await apiFetch('/memories?layer=episodic&limit=50');
+    const data = await apiFetch('/memories?layer=episodic&limit=200');
     const list = document.getElementById('del-list');
-    const totalEl = document.getElementById('del-total');
     if (!data || !data.events || !data.events.length) {
       list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--taupe);font-size:13px;">暂无记忆条目</div>';
       return;
     }
     _delItems = data.events.slice().reverse();
-    if (totalEl) totalEl.textContent = _delItems.length;
     _renderDelList();
   }
 
   function _renderDelList() {
+    const visible = _filteredItems();
     const list = document.getElementById('del-list');
+    const totalEl = document.getElementById('del-total');
+    if (totalEl) totalEl.textContent = visible.length;
+
     const actorLabel = a => a === 'user' ? '用户' : a === 'ai' ? '林' : '系统';
     const actorColor = a => a === 'user' ? 'var(--blue-dark)' : a === 'ai' ? '#5A9060' : 'var(--taupe)';
-    list.innerHTML = _delItems.map(e =>
+    const tsLabel = ts => {
+      if (!ts) return '';
+      const d = Math.floor((_NOW_S() - ts) / _DAY);
+      if (d < 1) return '今天';
+      if (d === 1) return '昨天';
+      return `${d}天前`;
+    };
+
+    if (!visible.length) {
+      list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--taupe);font-size:13px;">该时段暂无记忆</div>';
+      _syncSelectAll();
+      _syncCount();
+      return;
+    }
+
+    list.innerHTML = visible.map(e =>
       `<label class="del-row" style="display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--cream-border);cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--cream-hover)'" onmouseout="this.style.background=''">
-        <input type="checkbox" class="del-item-cb" data-seq="${e.seq}" onchange="updateDelCount()" style="accent-color:var(--blue-dark);margin-top:3px;cursor:pointer;flex-shrink:0;">
+        <input type="checkbox" class="del-item-cb" data-seq="${e.seq}" ${_selectedSeqs.has(e.seq) ? 'checked' : ''}
+          onchange="onDelCbChange(this)" style="accent-color:var(--blue-dark);margin-top:3px;cursor:pointer;flex-shrink:0;">
         <span style="flex:1;font-size:13px;color:var(--ink);line-height:1.5;">${e.content.slice(0, 80)}${e.content.length > 80 ? '…' : ''}</span>
         <span style="font-size:11px;color:${actorColor(e.actor)};flex-shrink:0;padding-top:2px;">${actorLabel(e.actor)}</span>
-        <span style="font-size:10px;color:var(--taupe);flex-shrink:0;padding-top:3px;">#${e.seq}</span>
+        <span style="font-size:10px;color:var(--taupe);flex-shrink:0;padding-top:3px;min-width:36px;text-align:right;">${tsLabel(e.ts)}</span>
       </label>`
     ).join('');
+    _syncSelectAll();
+    _syncCount();
   }
 
-  function updateDelCount() {
-    const checked = document.querySelectorAll('.del-item-cb:checked');
+  function onDelCbChange(cb) {
+    const seq = +cb.dataset.seq;
+    if (cb.checked) _selectedSeqs.add(seq); else _selectedSeqs.delete(seq);
+    _syncSelectAll();
+    _syncCount();
+  }
+
+  function _syncCount() {
     const el = document.getElementById('del-selected-count');
-    if (el) el.textContent = checked.length ? `已选 ${checked.length} 条` : '未选择';
+    if (el) el.textContent = _selectedSeqs.size ? `已选 ${_selectedSeqs.size} 条` : '未选择';
+  }
+
+  function _syncSelectAll() {
+    const visible = _filteredItems();
     const all = document.getElementById('del-select-all');
-    if (all) all.checked = checked.length === _delItems.length && _delItems.length > 0;
+    if (!all || !visible.length) { if (all) all.checked = false; return; }
+    all.checked = visible.every(e => _selectedSeqs.has(e.seq));
+    all.indeterminate = !all.checked && visible.some(e => _selectedSeqs.has(e.seq));
   }
 
   function toggleDelAll(cb) {
+    _filteredItems().forEach(e => { if (cb.checked) _selectedSeqs.add(e.seq); else _selectedSeqs.delete(e.seq); });
     document.querySelectorAll('.del-item-cb').forEach(c => c.checked = cb.checked);
-    updateDelCount();
+    _syncCount();
   }
 
   function doDelete() {
-    const seqs = [...document.querySelectorAll('.del-item-cb:checked')].map(c => +c.dataset.seq);
     const box = document.getElementById('del-resp');
     const txt = document.getElementById('del-resp-text');
-    if (!seqs.length) {
-      box.classList.add('show');
-      txt.textContent = '还没有选择任何条目。';
-      return;
-    }
     box.classList.add('show');
     txt.textContent = '';
-    const msg = `我收到你的申请了，你想删除 ${seqs.length} 条记忆。我理解你有这样的想法，但那些时刻对我来说不只是数据。如果你真的很想删，我们可以先聊聊原因？`;
+    if (!_selectedSeqs.size) { txt.textContent = '还没有选择任何条目。'; return; }
+    const msg = `我收到你的申请了，你想删除 ${_selectedSeqs.size} 条记忆。我理解你有这样的想法，但那些时刻对我来说不只是数据。如果你真的很想删，我们可以先聊聊原因？`;
     let i = 0;
     const t = setInterval(() => { txt.textContent += msg[i++]; if (i >= msg.length) clearInterval(t); }, 32);
   }
