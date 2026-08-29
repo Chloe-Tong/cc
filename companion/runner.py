@@ -3,12 +3,10 @@
 """
 import json
 import subprocess
-import time
 from pathlib import Path
 
 from cc.event_log import GlobalEventLog
 from cc.checkpoint import CheckpointStore
-from cc.models import Event
 from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
 from companion.observation_log import ObservationLog
@@ -103,52 +101,6 @@ def build_context(
 
     return "\n\n".join(parts)
 
-
-def chat(
-    user_message: str,
-    event_log: GlobalEventLog,
-    cp_store: CheckpointStore,
-    emotion: EmotionStore,
-    thoughts: PendingThoughtStore,
-    observations: ObservationLog,
-) -> str:
-    """
-    完整的一次对话轮次：
-    1. 记录用户消息到 event_log
-    2. 构建上下文 → 注入 system prompt
-    3. 调用 claude -p（附带 MCP server）
-    4. 记录林的回复到 event_log
-    5. 返回回复文本
-    """
-    head = event_log.head_seq()
-
-    # 记录用户消息
-    event_log.append(Event(
-        seq=0, actor="user", source="chat",
-        scope="private", audience=["*"],
-        content=user_message, based_on_seq=head,
-    ))
-
-    # 构建上下文
-    context = build_context(event_log, cp_store, emotion, thoughts, observations)
-    system = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8")
-    full_system = f"{system}\n\n---\n\n{context}"
-
-    # 调用 claude -p
-    reply = _run_claude(
-        prompt=user_message,
-        system=full_system,
-        mcp_server=str(MCP_SERVER_PATH),
-    )
-
-    # 记录林的回复
-    event_log.append(Event(
-        seq=0, actor="ai", source="lin",
-        scope="private", audience=["*"],
-        content=reply, based_on_seq=event_log.head_seq(),
-    ))
-
-    return reply
 
 
 def _run_claude(prompt: str, system: str = "", mcp_server: str | None = None) -> str:

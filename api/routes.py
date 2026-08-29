@@ -1,10 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 from typing import Optional
 
 from api.app import event_log, cp_store, emotion, thoughts, observations
-from companion.runner import chat, build_context
-from scheduler import record_activity
 
 router = APIRouter()
 
@@ -74,25 +71,6 @@ def get_observations(category: Optional[str] = None, limit: int = 20):
         {"id": o.id, "content": o.content, "category": o.category, "ts": o.created_at}
         for o in obs
     ]}
-
-
-# ── POST /chat ──────────────────────────────────────────────────
-class ChatRequest(BaseModel):
-    message: str
-
-@router.post("/chat")
-def post_chat(req: ChatRequest):
-    """发消息给林，返回回复。"""
-    record_activity()
-    reply = chat(
-        user_message=req.message,
-        event_log=event_log,
-        cp_store=cp_store,
-        emotion=emotion,
-        thoughts=thoughts,
-        observations=observations,
-    )
-    return {"reply": reply}
 
 
 # ── POST /compress ───────────────────────────────────────────────
