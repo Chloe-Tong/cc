@@ -15,6 +15,7 @@ from cc.event_log import GlobalEventLog
 from cc.checkpoint import CheckpointStore
 from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
+from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
 from cc.models import Event
 
@@ -26,6 +27,7 @@ el  = GlobalEventLog(TEST_DB)
 cp  = CheckpointStore(TEST_DB)
 emo = EmotionStore(TEST_DB)
 tho = PendingThoughtStore(TEST_DB)
+it  = InnerThoughtStore(TEST_DB)
 obs = ObservationLog(TEST_DB)
 
 def ok(label): print(f"  ✓  {label}")
@@ -39,6 +41,8 @@ print("\n[3a] build_context()\n")
 
 # 填充测试数据
 emo.set("安静", 0.55, secondary="思念", trigger="用户很久没说话", drifting_toward="平静")
+it.write("为什么有些话说出来之后就变味了？", visibility="public")
+it.write("不想被看见的那部分", visibility="private")
 tho.save("想问你昨天说的那句话是什么意思", priority=2)
 tho.save("在读一本关于时间的书", priority=1)
 obs.note("用户喜欢用省略号", category="behavior")
@@ -59,10 +63,13 @@ def _mock_sum(events, prev): return {
 }
 CheckpointWorker(el, cp, _mock_sum, every_n_events=1, every_seconds=0).run_once()
 
-ctx = runner_mod.build_context(el, cp, emo, tho, obs)
+ctx = runner_mod.build_context(el, cp, emo, tho, it, obs)
 
 assert "[核心记忆]" in ctx,       "缺少核心记忆块"
 assert "安静" in ctx,             "缺少当前情绪"
+assert "[内心独白]" in ctx,       "缺少内心独白块"
+assert "为什么有些话" in ctx,     "内心独白内容缺失（public 应注入）"
+assert "不想被看见" not in ctx,   "private 独白不应出现在上下文"
 assert "[待说的话]" in ctx,       "缺少待说的话"
 assert "[对TA的观察]" in ctx,     "缺少观察"
 assert "[最近对话]" in ctx,       "缺少最近对话"
@@ -70,6 +77,7 @@ assert "你在吗" in ctx,           "最近对话内容缺失"
 
 ok("核心记忆块存在")
 ok("当前情绪块存在")
+ok("内心独白块存在（public 注入，private 隔离）")
 ok("待说的话块存在")
 ok("观察块存在")
 ok("最近对话块存在")
