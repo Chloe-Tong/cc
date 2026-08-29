@@ -101,7 +101,8 @@ def trigger_compression():
     """手动触发记忆压缩（调试用）。"""
     from cc.checkpoint import CheckpointWorker
     from companion.runner import make_summarize_fn
-    worker = CheckpointWorker(event_log, cp_store, make_summarize_fn())
+    worker = CheckpointWorker(event_log, cp_store, make_summarize_fn(),
+                              every_n_events=1, every_seconds=0)
     cp = worker.run_once()
     if cp:
         return {"ok": True, "checkpoint_id": cp.id}
