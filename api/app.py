@@ -6,17 +6,19 @@ from cc.event_log import GlobalEventLog
 from cc.checkpoint import CheckpointStore
 from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
+from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 DB = str(DATA_DIR / "lin.db")
 
-event_log    = GlobalEventLog(DB)
-cp_store     = CheckpointStore(DB)
-emotion      = EmotionStore(DB)
-thoughts     = PendingThoughtStore(DB)
-observations = ObservationLog(DB)
+event_log     = GlobalEventLog(DB)
+cp_store      = CheckpointStore(DB)
+emotion       = EmotionStore(DB)
+thoughts      = PendingThoughtStore(DB)   # 待说的话（消息队列）
+inner_thoughts = InnerThoughtStore(DB)    # 内心独白（自言自语）
+observations  = ObservationLog(DB)
 
 app = FastAPI(title="林 Memory API")
 app.add_middleware(

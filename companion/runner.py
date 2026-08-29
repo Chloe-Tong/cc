@@ -9,6 +9,7 @@ from cc.event_log import GlobalEventLog
 from cc.checkpoint import CheckpointStore
 from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
+from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
 
 SYSTEM_PROMPT_PATH = Path(__file__).parent / "system_prompt.md"
@@ -69,6 +70,7 @@ def build_context(
     cp_store: CheckpointStore,
     emotion: EmotionStore,
     thoughts: PendingThoughtStore,
+    inner_thoughts: InnerThoughtStore,
     observations: ObservationLog,
 ) -> str:
     """把记忆层组装成注入到林的 system prompt 的上下文块。"""
@@ -84,6 +86,13 @@ def build_context(
         trigger = f"（因为：{emo.trigger}）" if emo.trigger else ""
         parts.append(f"[当前情绪]\n{emo.primary}（强度 {emo.intensity:.0%}）{trigger}{drift}")
 
+    # 内心独白：只注入 public 的（private 的存在但不透传给对话上下文）
+    soliloquy = inner_thoughts.recent(limit=5, visibility="public")
+    if soliloquy:
+        items = "\n".join(f"- {t.content}" for t in soliloquy)
+        parts.append(f"[内心独白]\n（这些是你自己的碎思，不是要说给TA的话）\n{items}")
+
+    # 待说的话：打算在对话中说出口的内容
     pending = thoughts.pending()
     if pending:
         items = "\n".join(f"- [{t.priority}] {t.content}" for t in pending)

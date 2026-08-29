@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
 
-from api.app import event_log, cp_store, emotion, thoughts, observations
+from api.app import event_log, cp_store, emotion, thoughts, inner_thoughts, observations
 
 router = APIRouter()
 
@@ -56,12 +56,29 @@ def get_memories(layer: str = "episodic", limit: int = 20):
 
 
 # ── GET /thoughts ────────────────────────────────────────────────
+# 返回林打算说给用户的话（待说消息队列，未说出口的）
 @router.get("/thoughts")
 def get_thoughts():
     return {"thoughts": [
         {"id": t.id, "content": t.content, "priority": t.priority}
         for t in thoughts.pending()
     ]}
+
+
+# ── GET /thoughts/inner ──────────────────────────────────────────
+# 返回林的内心独白（自言自语，非对话）
+# visibility: "public"（展示）| "private"（仅计数，内容不返回）| 不传则两种都返
+@router.get("/thoughts/inner")
+def get_inner_thoughts(limit: int = 20):
+    counts = inner_thoughts.count_by_visibility()
+    public_items = inner_thoughts.recent(limit=limit, visibility="public")
+    return {
+        "public": [
+            {"id": t.id, "content": t.content, "ts": t.created_at}
+            for t in public_items
+        ],
+        "private_count": counts.get("private", 0),
+    }
 
 
 # ── GET /observations ────────────────────────────────────────────

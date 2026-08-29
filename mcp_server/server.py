@@ -14,6 +14,7 @@ from cc.checkpoint import CheckpointStore
 from cc.models import Event
 from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
+from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
 
 # ── 数据路径 ────────────────────────────────────────────────────
@@ -22,11 +23,12 @@ DATA_DIR.mkdir(exist_ok=True)
 
 DB = str(DATA_DIR / "lin.db")
 
-event_log    = GlobalEventLog(DB)
-cp_store     = CheckpointStore(DB)
-emotion      = EmotionStore(DB)
-thoughts     = PendingThoughtStore(DB)
-observations = ObservationLog(DB)
+event_log      = GlobalEventLog(DB)
+cp_store       = CheckpointStore(DB)
+emotion        = EmotionStore(DB)
+thoughts       = PendingThoughtStore(DB)   # 待说的话
+inner_thoughts = InnerThoughtStore(DB)     # 内心独白
+observations   = ObservationLog(DB)
 
 # ── Server ──────────────────────────────────────────────────────
 app = MCPServer("lin-memory", description="林的记忆与情绪系统")
@@ -127,17 +129,22 @@ def update_core(category: str, content: str) -> dict:
 
 
 # ── 5. get_working_context ───────────────────────────────────────
-@app.tool(description="获取当前窗口工作记忆（最近事件+当前情绪+观察）")
+@app.tool(description="获取当前窗口工作记忆（最近事件+当前情绪+内心独白+待说的话+观察）")
 def get_working_context() -> dict:
-    events = event_log.tail(15)
-    emo = emotion.current()
+    events  = event_log.tail(15)
+    emo     = emotion.current()
     pending = thoughts.pending()
-    obs = observations.recent(limit=5)
+    soliloquy = inner_thoughts.recent(limit=5, visibility="public")
+    obs     = observations.recent(limit=5)
     return {
         "recent_events": [{"actor": e.actor, "content": e.content,
                             "ts": e.created_at} for e in events],
         "emotion": _emotion_dict(emo),
-        "pending_thoughts": [{"id": t.id, "content": t.content,
+        # 内心独白：自言自语，不是要说的话
+        "inner_thoughts": [{"id": t.id, "content": t.content,
+                             "visibility": t.visibility} for t in soliloquy],
+        # 待说的话：打算在对话中说出口的内容
+        "pending_messages": [{"id": t.id, "content": t.content,
                                "priority": t.priority} for t in pending],
         "recent_observations": [{"content": o.content,
                                   "category": o.category} for o in obs],
@@ -166,14 +173,14 @@ def get_emotion_history(hours: float = 24) -> dict:
 
 
 # ── 8. save_pending_thought ──────────────────────────────────────
-@app.tool(description="保存一个林想稍后说的想法")
+@app.tool(description="保存一条林打算说给用户的话（对话消息队列）")
 def save_pending_thought(content: str, priority: int = 1) -> dict:
     t = thoughts.save(content, priority=priority)
     return {"ok": True, "thought_id": t.id}
 
 
 # ── 9. get_pending_thoughts ──────────────────────────────────────
-@app.tool(description="获取所有还没说出口的想法")
+@app.tool(description="获取所有还没说出口的话（打算在对话中说的）")
 def get_pending_thoughts() -> dict:
     pending = thoughts.pending()
     return {"thoughts": [
@@ -183,10 +190,36 @@ def get_pending_thoughts() -> dict:
 
 
 # ── 10. mark_thought_shared ──────────────────────────────────────
-@app.tool(description="标记某条待说想法已分享")
+@app.tool(description="标记某条待说的话已经说出口了")
 def mark_thought_shared(thought_id: int) -> dict:
     thoughts.mark_shared(thought_id)
     return {"ok": True}
+
+
+# ── 11a. write_inner_thought ─────────────────────────────────────
+@app.tool(description=(
+    "记录一条内心独白（自言自语，不是要说给用户的话）。"
+    "visibility: 'public'=在 dashboard 可见 | 'private'=完全私密"
+))
+def write_inner_thought(content: str,
+                        visibility: str = "public") -> dict:
+    t = inner_thoughts.write(content, visibility=visibility)
+    return {"ok": True, "inner_thought_id": t.id, "visibility": t.visibility}
+
+
+# ── 11b. get_inner_thoughts ──────────────────────────────────────
+@app.tool(description=(
+    "读取内心独白列表。visibility 可过滤 'public'/'private'，不传则两种都返。"
+    "注意：private 的内容通常不应透传给对话上下文。"
+))
+def get_inner_thoughts(visibility: Optional[str] = None,
+                       limit: int = 10) -> dict:
+    items = inner_thoughts.recent(limit=limit, visibility=visibility)
+    return {"inner_thoughts": [
+        {"id": t.id, "content": t.content,
+         "visibility": t.visibility, "ts": t.created_at}
+        for t in items
+    ]}
 
 
 # ── 11. note_observation ─────────────────────────────────────────
@@ -230,19 +263,21 @@ def compress_memories(older_than_hours: float = 48) -> dict:
 
 # ── 直接调用入口（测试用）───────────────────────────────────────
 _TOOL_MAP = {
-    "read_memories":          read_memories,
-    "search_memories":        search_memories,
-    "write_episodic":         write_episodic,
-    "update_core":            update_core,
-    "get_working_context":    get_working_context,
-    "set_emotion_state":      set_emotion_state,
-    "get_emotion_history":    get_emotion_history,
-    "save_pending_thought":   save_pending_thought,
-    "get_pending_thoughts":   get_pending_thoughts,
-    "mark_thought_shared":    mark_thought_shared,
-    "note_observation":       note_observation,
+    "read_memories":             read_memories,
+    "search_memories":           search_memories,
+    "write_episodic":            write_episodic,
+    "update_core":               update_core,
+    "get_working_context":       get_working_context,
+    "set_emotion_state":         set_emotion_state,
+    "get_emotion_history":       get_emotion_history,
+    "save_pending_thought":      save_pending_thought,
+    "get_pending_thoughts":      get_pending_thoughts,
+    "mark_thought_shared":       mark_thought_shared,
+    "write_inner_thought":       write_inner_thought,
+    "get_inner_thoughts":        get_inner_thoughts,
+    "note_observation":          note_observation,
     "get_relationship_snapshot": get_relationship_snapshot,
-    "compress_memories":      compress_memories,
+    "compress_memories":         compress_memories,
 }
 
 
