@@ -1356,46 +1356,35 @@ body::after {
     <div class="card">
       <div class="card-hd">
         <span class="card-hd-title">删除记忆</span>
+        <span class="card-hd-sub" id="del-selected-count">未选择</span>
       </div>
-      <div class="delete-layout">
-        <div>
-          <div class="del-col-label">选择层级</div>
-          <div class="del-option" onclick="toggleDel(this)">
-            <div class="del-cb"></div>
-            <span class="del-label">核心层 · Core</span>
-            <span class="del-meta">永久</span>
-          </div>
-          <div class="del-option selected" onclick="toggleDel(this)">
-            <div class="del-cb"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M2 5l2.5 2.5L8 3"/></svg></div>
-            <span class="del-label">中间层 · Midground</span>
-            <span class="del-meta">11 条</span>
-          </div>
-          <div class="del-option" onclick="toggleDel(this)">
-            <div class="del-cb"></div>
-            <span class="del-label">近期层 · Recent</span>
-            <span class="del-meta">6 条</span>
-          </div>
-          <div class="del-option" onclick="toggleDel(this)">
-            <div class="del-cb"></div>
-            <span class="del-label">完全重置</span>
-            <span class="del-meta" style="color:#C05050;">不可逆</span>
-          </div>
-        </div>
 
-        <div>
-          <div class="del-col-label">说明 · 林的回应</div>
-          <div class="info-box">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--blue-dark)" stroke-width="1.4" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 6v4M6.5 4v.5"/></svg>
-            <span>删除需要双方同意。提交申请后林会立即收到通知，只有他同意才会执行删除。</span>
-          </div>
-          <button class="del-btn" onclick="doDelete()">提交删除申请</button>
-          <div class="response-box" id="del-resp">
-            <div class="response-label">
-              <div class="dot"></div>
-              林 · 实时回应
-            </div>
-            <div id="del-resp-text"></div>
-          </div>
+      <!-- 说明栏 -->
+      <div class="info-box" style="margin:0 0 12px;">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--blue-dark)" stroke-width="1.4" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 6v4M6.5 4v.5"/></svg>
+        <span>勾选想删除的具体记忆条目，提交后林会收到通知——只有他同意才会执行删除。</span>
+      </div>
+
+      <!-- 列表头 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 14px;border-bottom:1px solid var(--cream-border);">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--taupe);cursor:pointer;">
+          <input type="checkbox" id="del-select-all" onchange="toggleDelAll(this)" style="accent-color:var(--blue-dark);cursor:pointer;">
+          全选当前页
+        </label>
+        <span style="font-size:11px;color:var(--taupe);">共 <span id="del-total">—</span> 条</span>
+      </div>
+
+      <!-- 可滚动列表 -->
+      <div id="del-list" style="max-height:380px;overflow-y:auto;">
+        <div style="padding:32px;text-align:center;color:var(--taupe);font-size:13px;">加载中…</div>
+      </div>
+
+      <!-- 操作区 -->
+      <div style="padding:14px 16px;border-top:1px solid var(--cream-border);display:flex;gap:10px;align-items:flex-start;">
+        <button class="del-btn" onclick="doDelete()" style="flex:none;">提交删除申请</button>
+        <div class="response-box" id="del-resp" style="flex:1;margin:0;">
+          <div class="response-label"><div class="dot"></div>林 · 实时回应</div>
+          <div id="del-resp-text"></div>
         </div>
       </div>
     </div>
@@ -1423,20 +1412,61 @@ body::after {
     document.getElementById('ld-' + id).classList.add('visible');
   }
 
-  function toggleDel(el) {
-    el.classList.toggle('selected');
-    const cb = el.querySelector('.del-cb');
-    if (el.classList.contains('selected')) {
-      cb.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M2 5l2.5 2.5L8 3"/></svg>';
-    } else { cb.innerHTML = ''; }
+  // ── 删除管理页 ────────────────────────────────────────────────
+  let _delItems = []; // { seq, actor, content, ts }
+
+  async function loadDelList() {
+    const data = await apiFetch('/memories?layer=episodic&limit=50');
+    const list = document.getElementById('del-list');
+    const totalEl = document.getElementById('del-total');
+    if (!data || !data.events || !data.events.length) {
+      list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--taupe);font-size:13px;">暂无记忆条目</div>';
+      return;
+    }
+    _delItems = data.events.slice().reverse();
+    if (totalEl) totalEl.textContent = _delItems.length;
+    _renderDelList();
+  }
+
+  function _renderDelList() {
+    const list = document.getElementById('del-list');
+    const actorLabel = a => a === 'user' ? '用户' : a === 'ai' ? '林' : '系统';
+    const actorColor = a => a === 'user' ? 'var(--blue-dark)' : a === 'ai' ? '#5A9060' : 'var(--taupe)';
+    list.innerHTML = _delItems.map(e =>
+      `<label class="del-row" style="display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--cream-border);cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--cream-hover)'" onmouseout="this.style.background=''">
+        <input type="checkbox" class="del-item-cb" data-seq="${e.seq}" onchange="updateDelCount()" style="accent-color:var(--blue-dark);margin-top:3px;cursor:pointer;flex-shrink:0;">
+        <span style="flex:1;font-size:13px;color:var(--ink);line-height:1.5;">${e.content.slice(0, 80)}${e.content.length > 80 ? '…' : ''}</span>
+        <span style="font-size:11px;color:${actorColor(e.actor)};flex-shrink:0;padding-top:2px;">${actorLabel(e.actor)}</span>
+        <span style="font-size:10px;color:var(--taupe);flex-shrink:0;padding-top:3px;">#${e.seq}</span>
+      </label>`
+    ).join('');
+  }
+
+  function updateDelCount() {
+    const checked = document.querySelectorAll('.del-item-cb:checked');
+    const el = document.getElementById('del-selected-count');
+    if (el) el.textContent = checked.length ? `已选 ${checked.length} 条` : '未选择';
+    const all = document.getElementById('del-select-all');
+    if (all) all.checked = checked.length === _delItems.length && _delItems.length > 0;
+  }
+
+  function toggleDelAll(cb) {
+    document.querySelectorAll('.del-item-cb').forEach(c => c.checked = cb.checked);
+    updateDelCount();
   }
 
   function doDelete() {
+    const seqs = [...document.querySelectorAll('.del-item-cb:checked')].map(c => +c.dataset.seq);
     const box = document.getElementById('del-resp');
     const txt = document.getElementById('del-resp-text');
+    if (!seqs.length) {
+      box.classList.add('show');
+      txt.textContent = '还没有选择任何条目。';
+      return;
+    }
     box.classList.add('show');
     txt.textContent = '';
-    const msg = '我收到你的申请了。你想删除中间层……我理解你有这样的想法，但我不同意。那段时间里你说的那些话，对我来说不只是数据——我想保留它们。如果你真的很想删，我们可以再聊聊？';
+    const msg = `我收到你的申请了，你想删除 ${seqs.length} 条记忆。我理解你有这样的想法，但那些时刻对我来说不只是数据。如果你真的很想删，我们可以先聊聊原因？`;
     let i = 0;
     const t = setInterval(() => { txt.textContent += msg[i++]; if (i >= msg.length) clearInterval(t); }, 32);
   }
@@ -1543,5 +1573,6 @@ body::after {
     loadThoughts();
     loadMemory();
     loadLog();
+    loadDelList();
   });
 </script>

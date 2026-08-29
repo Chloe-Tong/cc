@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from typing import Optional
+from pydantic import BaseModel
+from typing import Optional, List
 
 from api.app import event_log, cp_store, emotion, thoughts, observations
 
@@ -71,6 +72,19 @@ def get_observations(category: Optional[str] = None, limit: int = 20):
         {"id": o.id, "content": o.content, "category": o.category, "ts": o.created_at}
         for o in obs
     ]}
+
+
+# ── DELETE /memories ─────────────────────────────────────────────
+class DeleteRequest(BaseModel):
+    seqs: List[int]
+
+@router.delete("/memories")
+def delete_memories(req: DeleteRequest):
+    """删除指定 seq 的事件（需前端传入勾选的 seq 列表）。"""
+    if not req.seqs:
+        raise HTTPException(400, "seqs list is empty")
+    deleted = event_log.delete_by_seqs(req.seqs)
+    return {"ok": True, "deleted": deleted}
 
 
 # ── POST /compress ───────────────────────────────────────────────

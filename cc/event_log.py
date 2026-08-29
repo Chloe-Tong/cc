@@ -100,6 +100,18 @@ class GlobalEventLog:
 
         return events
 
+    def delete_by_seqs(self, seqs: list[int]) -> int:
+        """Hard-delete events by seq. Returns number of rows deleted."""
+        if not seqs:
+            return 0
+        with self._lock:
+            with self._conn() as conn:
+                placeholders = ",".join("?" * len(seqs))
+                cur = conn.execute(
+                    f"DELETE FROM events WHERE seq IN ({placeholders})", seqs
+                )
+                return cur.rowcount
+
     def tail(self, n: int, scopes: Optional[set[str]] = None) -> list[Event]:
         query = "SELECT * FROM (SELECT * FROM events"
         params: list = []
