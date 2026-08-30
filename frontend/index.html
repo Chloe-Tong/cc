@@ -1441,17 +1441,6 @@ body::after {
       </div>
     </div>
 
-    <!-- 清空全部数据 -->
-    <div class="card" style="margin-top:16px;border-color:rgba(192,57,43,0.25);">
-      <div class="card-hd">
-        <span class="card-hd-title" style="color:#c0392b;">清空全部数据</span>
-        <span class="card-hd-sub">不可撤销</span>
-      </div>
-      <div style="padding:12px 16px;display:flex;align-items:center;gap:12px;">
-        <button onclick="doReset()" style="background:#c0392b;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:13px;cursor:pointer;font-family:inherit;">清空</button>
-        <div id="reset-status" style="font-size:12px;color:var(--taupe);"></div>
-      </div>
-    </div>
   </div>
 
 </div><!-- /main -->
@@ -1729,28 +1718,6 @@ body::after {
     loadLog();
     loadDelList();
   });
-
-  // ── 清空全部 ─────────────────────────────────────────────────
-  async function doReset() {
-    if (!confirm('确定清空全部数据？此操作不可撤销。')) return;
-    const status = document.getElementById('reset-status');
-    status.textContent = '清空中…';
-    try {
-      const res = await fetch(API + '/reset', { method: 'DELETE' });
-      const data = await res.json();
-      if (data.ok) {
-        status.textContent = '✓ 已清空';
-        status.style.color = 'var(--blue-dark)';
-        loadStatus(); loadThoughts(); loadMemory(); loadLog(); loadDelList();
-      } else {
-        status.textContent = '失败';
-        status.style.color = '#c0392b';
-      }
-    } catch(e) {
-      status.textContent = '出错：' + e.message;
-      status.style.color = '#c0392b';
-    }
-  }
 
   // ── 导入记忆 ─────────────────────────────────────────────────
   function onImportFileChange(input) {
