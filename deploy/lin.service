@@ -4,9 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=ubuntu
-WorkingDirectory=/home/ubuntu/cc
-ExecStart=/home/ubuntu/cc/.venv/bin/uvicorn api.app:app --host 127.0.0.1 --port 8000
+WorkingDirectory=/root/cc
+ExecStart=/root/cc/.venv/bin/uvicorn api.app:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
