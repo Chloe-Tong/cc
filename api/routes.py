@@ -70,7 +70,7 @@ def get_memories(layer: str = "episodic", limit: int = 20, offset: int = 0):
 
 
 # ── GET /thoughts ────────────────────────────────────────────────
-# 返回林打算说给用户的话（待说消息队列，未说出口的）
+# 返回晓打算说给用户的话（待说消息队列，未说出口的）
 @router.get("/thoughts")
 def get_thoughts():
     return {"thoughts": [
@@ -80,7 +80,7 @@ def get_thoughts():
 
 
 # ── GET /thoughts/inner ──────────────────────────────────────────
-# 返回林的内心独白（自言自语，非对话）
+# 返回晓的内心独白（自言自语，非对话）
 # visibility: "public"（展示）| "private"（仅计数，内容不返回）| 不传则两种都返
 @router.get("/thoughts/inner")
 def get_inner_thoughts(limit: int = 20):

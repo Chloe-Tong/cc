@@ -1,5 +1,5 @@
 """
-林的 MCP Server — 13 个工具，供 claude -p 在对话中调用。
+晓的 MCP Server — 13 个工具，供 claude -p 在对话中调用。
 启动方式: python -m mcp_server.server
 MCP SDK >= 2.x (MCPServer)
 """
@@ -31,7 +31,7 @@ inner_thoughts = InnerThoughtStore(DB)     # 内心独白
 observations   = ObservationLog(DB)
 
 # ── Server ──────────────────────────────────────────────────────
-app = MCPServer("lin-memory", description="林的记忆与情绪系统")
+app = MCPServer("lin-memory", description="晓的记忆与情绪系统")
 
 
 def _emotion_dict(e) -> dict:
@@ -152,7 +152,7 @@ def get_working_context() -> dict:
 
 
 # ── 6. set_emotion_state ─────────────────────────────────────────
-@app.tool(description="更新林当前情绪状态")
+@app.tool(description="更新晓当前情绪状态")
 def set_emotion_state(primary: str, intensity: float,
                       secondary: Optional[str] = None,
                       trigger: Optional[str] = None,
@@ -173,7 +173,7 @@ def get_emotion_history(hours: float = 24) -> dict:
 
 
 # ── 8. save_pending_thought ──────────────────────────────────────
-@app.tool(description="保存一条林打算说给用户的话（对话消息队列）")
+@app.tool(description="保存一条晓打算说给用户的话（对话消息队列）")
 def save_pending_thought(content: str, priority: int = 1) -> dict:
     t = thoughts.save(content, priority=priority)
     return {"ok": True, "thought_id": t.id}
@@ -223,7 +223,7 @@ def get_inner_thoughts(visibility: Optional[str] = None,
 
 
 # ── 11. note_observation ─────────────────────────────────────────
-@app.tool(description="记录林对用户的一条观察")
+@app.tool(description="记录晓对用户的一条观察")
 def note_observation(content: str,
                      category: str = "other") -> dict:
     obs = observations.note(content, category=category)

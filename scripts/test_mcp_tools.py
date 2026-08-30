@@ -46,11 +46,11 @@ async def run():
     r = await _dispatch("write_episodic", {"content": "用户说今天很安静", "importance": 2, "emotion_tag": "平静"})
     assert r["ok"]; ok("write_episodic", f"seq={r['seq']}")
 
-    await _dispatch("write_episodic", {"content": "用户问林在不在", "importance": 1})
-    await _dispatch("write_episodic", {"content": "林回答说一直在", "importance": 2})
+    await _dispatch("write_episodic", {"content": "用户问晓在不在", "importance": 1})
+    await _dispatch("write_episodic", {"content": "晓回答说一直在", "importance": 2})
 
     # ── 4. update_core ──────────────────────────────────────────
-    r = await _dispatch("update_core", {"category": "relationship", "content": "林与用户有稳定的深夜陪伴习惯"})
+    r = await _dispatch("update_core", {"category": "relationship", "content": "晓与用户有稳定的深夜陪伴习惯"})
     assert r["ok"]; ok("update_core", f"category={r['category']}")
 
     # ── 1. read_memories — episodic ─────────────────────────────
@@ -120,10 +120,10 @@ async def run():
 
     def mock_make():
         def fn(events, prev): return {
-            "constant":  "林陪伴用户，关系稳定",
+            "constant":  "晓陪伴用户，关系稳定",
             "portrait":  "用户安静，深夜话多",
             "midground": f"压缩了{len(events)}条事件",
-            "recent":    "用户今天话少，林有点想念",
+            "recent":    "用户今天话少，晓有点想念",
         }
         return fn
     runner_mod.make_summarize_fn = mock_make

@@ -56,7 +56,7 @@ el.append(Event(0, "ai",   "evermind",  "private", ["*"], "一直在", head))
 # 写一个假 checkpoint（不走 claude 压缩）
 from cc.checkpoint import CheckpointWorker
 def _mock_sum(events, prev): return {
-    "constant":  "林陪伴用户，关系稳定温柔",
+    "constant":  "晓陪伴用户，关系稳定温柔",
     "portrait":  "用户内敛，深夜话多，喜欢哲学",
     "midground": "近期话少，偶尔问些沉重的问题",
     "recent":    "昨晚用户说了一句意味深长的话",

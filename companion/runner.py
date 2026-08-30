@@ -1,5 +1,5 @@
 """
-林的对话入口 — 使用 claude -p 运行，注入记忆上下文。
+晓的对话入口 — 使用 claude -p 运行，注入记忆上下文。
 """
 import json
 import subprocess
@@ -44,7 +44,7 @@ def make_summarize_fn():
 
 输出格式：
 {{
-  "constant":  "关于这段关系或林本身不会变的核心事实（1-2句）",
+  "constant":  "关于这段关系或晓本身不会变的核心事实（1-2句）",
   "portrait":  "用户的性格/偏好/习惯画像（2-3句）",
   "midground": "中期上下文：过去几天/周的主要话题和状态（2-4句）",
   "recent":    "最近一段时间发生的事，情绪走向（3-5句）"
@@ -73,7 +73,7 @@ def build_context(
     inner_thoughts: InnerThoughtStore,
     observations: ObservationLog,
 ) -> str:
-    """把记忆层组装成注入到林的 system prompt 的上下文块。"""
+    """把记忆层组装成注入到晓的 system prompt 的上下文块。"""
     parts = []
 
     cp = cp_store.latest()
