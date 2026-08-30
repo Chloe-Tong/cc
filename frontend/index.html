@@ -1739,7 +1739,7 @@ body::after {
     const btn = document.getElementById('import-btn');
     const status = document.getElementById('import-status');
     btn.disabled = true;
-    let totalImported = 0, totalSkipped = 0, staleCompression = false, errors = [];
+    let totalImported = 0, totalSkipped = 0, totalMalformed = 0, staleCompression = false, errors = [];
 
     function showStatus(msg, color, bg) {
       status.style.display = 'block';
@@ -1773,6 +1773,7 @@ body::after {
         if (ok && data.ok) {
           totalImported += data.imported;
           totalSkipped += (data.skipped || 0);
+          totalMalformed += (data.malformed || 0);
           if (data.stale_compression) staleCompression = true;
         } else {
           errors.push(`${file.name}: ${data.detail || '失败'}`);
@@ -1784,14 +1785,21 @@ body::after {
     if (errors.length === 0) {
       let msg = `导入完成：${totalImported} 条已写入`;
       if (totalSkipped > 0) msg += `，跳过重复 ${totalSkipped} 条`;
+      if (totalMalformed > 0) msg += `，跳过无法识别 ${totalMalformed} 条`;
       if (staleCompression) msg += '。\n注意：部分数据早于已压缩记忆，若需要请手动触发压缩。';
-      msg += '\n\n数据已写入全局日志，正在跳转…';
+      msg += totalImported > 0
+        ? '\n\n数据已写入全局日志，正在跳转…'
+        : '\n\n没有新增内容（这些对话之前已经导入过了）。';
       showStatus(msg, staleCompression ? '#b05a00' : 'var(--blue-dark)', staleCompression ? '#fff8ec' : 'var(--blue-light)');
       loadLog();
-      setTimeout(() => {
-        const logNav = document.querySelector('[onclick*="log"]');
-        if (logNav) logNav.click();
-      }, 1200);
+      if (totalImported > 0) {
+        setTimeout(() => {
+          const logNav = document.querySelector('[onclick*="log"]');
+          if (logNav) logNav.click();
+        }, 1200);
+      } else {
+        btn.disabled = false;
+      }
     } else if (totalImported > 0) {
       showStatus(`部分成功：${totalImported} 条已写入，失败：\n${errors.join('\n')}`, '#b05a00', '#fff8ec');
       btn.disabled = false;

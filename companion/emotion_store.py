@@ -1,4 +1,6 @@
 import sqlite3
+
+from cc.db import open_db
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -22,9 +24,7 @@ class EmotionStore:
         self._init()
 
     def _conn(self):
-        c = sqlite3.connect(self._db)
-        c.row_factory = sqlite3.Row
-        return c
+        return open_db(self._db)
 
     def _init(self):
         with self._conn() as c:

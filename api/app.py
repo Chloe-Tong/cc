@@ -29,6 +29,22 @@ app.add_middleware(
 )
 
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
+from fastapi import Request
+import logging, traceback
+
+log = logging.getLogger("evermind")
+
+
+@app.exception_handler(Exception)
+async def unhandled_error(request: Request, exc: Exception):
+    """把未捕获异常转成 JSON，前端才能显示真正的原因而不是'响应格式错误'。"""
+    log.error("unhandled error on %s\n%s", request.url.path, traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"ok": False, "detail": f"{type(exc).__name__}: {exc}"},
+    )
+
 
 from api.routes import router
 app.include_router(router)

@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from typing import Optional, Callable
 
+from .db import open_db
 from .models import Checkpoint, Event
 from .event_log import GlobalEventLog
 
@@ -17,9 +18,7 @@ class CheckpointStore:
         self._init_db()
 
     def _conn(self):
-        conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        return open_db(self._db_path)
 
     def _init_db(self):
         with self._conn() as conn:

@@ -1,10 +1,17 @@
+import hashlib
 import sqlite3
 import json
 import threading
 from pathlib import Path
 from typing import Optional
 
+from .db import open_db
 from .models import Event
+
+
+def content_fingerprint(content: str) -> str:
+    """内容指纹，用于去重时代替整段正文，省内存。"""
+    return hashlib.blake2b(content.encode("utf-8"), digest_size=16).hexdigest()
 
 
 class GlobalEventLog:
@@ -15,10 +22,8 @@ class GlobalEventLog:
         self._lock = threading.Lock()
         self._init_db()
 
-    def _conn(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+    def _conn(self):
+        return open_db(self._db_path)
 
     def _init_db(self):
         with self._conn() as conn:
@@ -55,6 +60,40 @@ class GlobalEventLog:
                 )
                 event.seq = cur.lastrowid
         return event
+
+    def append_many(self, events: list[Event]) -> int:
+        """批量写入，单事务单连接。用于导入，避免逐条 append 的连接开销。"""
+        if not events:
+            return 0
+        rows = [
+            (
+                e.actor, e.source, e.scope, json.dumps(e.audience),
+                e.content, e.based_on_seq, e.created_at,
+            )
+            for e in events
+        ]
+        with self._lock:
+            with self._conn() as conn:
+                conn.executemany(
+                    """INSERT INTO events
+                       (actor, source, scope, audience, content, based_on_seq, created_at)
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    rows,
+                )
+        return len(rows)
+
+    def dedup_keys(self) -> set[tuple[str, str, int]]:
+        """一次扫描建立 (actor, content 指纹, 分钟桶) 集合，供导入去重使用。
+
+        逐条 SELECT 查重是 O(n²) 且每次开新连接；这里一次读完放进内存集合。
+        """
+        keys: set[tuple[str, str, int]] = set()
+        with self._conn() as conn:
+            for actor, content, ts in conn.execute(
+                "SELECT actor, content, created_at FROM events"
+            ):
+                keys.add((actor, content_fingerprint(content), int(ts // 60)))
+        return keys
 
     def head_seq(self) -> int:
         with self._conn() as conn:

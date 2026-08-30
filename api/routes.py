@@ -4,9 +4,12 @@ from typing import Optional, List
 
 from api.app import event_log, cp_store, emotion, thoughts, inner_thoughts, observations
 from api.import_parser import detect_and_parse
+from cc.event_log import content_fingerprint
 from cc.models import Event
 
 router = APIRouter()
+
+MAX_IMPORT_BYTES = 150 * 1024 * 1024
 
 
 # ── GET /status ─────────────────────────────────────────────────
@@ -128,6 +131,14 @@ async def import_conversations(file: UploadFile = File(...)):
     fname = (file.filename or "").lower()
     raw_bytes = await file.read()
 
+    # 整份 JSON 要一次解析进内存，太大会把小机器的内存打满
+    if len(raw_bytes) > MAX_IMPORT_BYTES:
+        raise HTTPException(
+            413,
+            f"文件 {len(raw_bytes) / 1048576:.0f}MB，超过 {MAX_IMPORT_BYTES // 1048576}MB 上限。"
+            "请把 conversations.json 拆分成几份后分批导入。",
+        )
+
     if fname.endswith(".zip"):
         try:
             zf = zipfile.ZipFile(io.BytesIO(raw_bytes))
@@ -143,34 +154,38 @@ async def import_conversations(file: UploadFile = File(...)):
     else:
         raise HTTPException(400, "请上传 .json 或 .zip 文件")
     try:
-        events, fmt = detect_and_parse(raw)
+        events, fmt, malformed = detect_and_parse(raw)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise HTTPException(400, f"解析失败：{e}")
+    except MemoryError:
+        raise HTTPException(413, "文件过大，服务器内存不足。请拆分后分批导入。")
 
-    import sqlite3 as _sqlite3, time as _time
+    if not events:
+        raise HTTPException(400, "文件解析成功但没有找到任何对话内容")
+
+    import time as _time
 
     head = event_log.head_seq()
-    imported = 0
     skipped = 0
     earliest_ts = None
 
-    # 预加载已有事件的 (actor, content, created_at) 用于去重
-    def _is_duplicate(actor: str, content: str, ts: float) -> bool:
-        with _sqlite3.connect(event_log._db_path) as conn:
-            row = conn.execute(
-                """SELECT 1 FROM events
-                   WHERE actor=? AND content=? AND ABS(created_at - ?) < 60
-                   LIMIT 1""",
-                (actor, content, ts),
-            ).fetchone()
-        return row is not None
+    # 一次性读出已有事件的指纹集合；逐条 SELECT 是 O(n²)，且每次开新连接会耗尽 fd。
+    seen = event_log.dedup_keys()
 
+    def _mark_seen(actor: str, fp: str, bucket: int) -> None:
+        seen.update({(actor, fp, bucket - 1), (actor, fp, bucket), (actor, fp, bucket + 1)})
+
+    to_write: list[Event] = []
     for ev in events:
         ts = ev["ts"] if ev["ts"] > 0 else _time.time()
-        if _is_duplicate(ev["actor"], ev["content"], ts):
+        fp = content_fingerprint(ev["content"])
+        bucket = int(ts // 60)
+        if (ev["actor"], fp, bucket) in seen:
             skipped += 1
             continue
-        e = Event(
+        # 同一份文件内部也要去重，且相邻分钟桶都占位，近似原来的 ±60 秒窗口
+        _mark_seen(ev["actor"], fp, bucket)
+        to_write.append(Event(
             seq=0,
             actor=ev["actor"],
             source="import",
@@ -179,11 +194,11 @@ async def import_conversations(file: UploadFile = File(...)):
             content=ev["content"],
             based_on_seq=head,
             created_at=ts,
-        )
-        event_log.append(e)
-        imported += 1
+        ))
         if earliest_ts is None or ts < earliest_ts:
             earliest_ts = ts
+
+    imported = event_log.append_many(to_write)
 
     # 检测冲突：导入数据是否早于已压缩记忆
     stale_compression = False
@@ -201,6 +216,7 @@ async def import_conversations(file: UploadFile = File(...)):
         "format": fmt,
         "imported": imported,
         "skipped": skipped,
+        "malformed": malformed,
         "stale_compression": stale_compression,
     }
 
