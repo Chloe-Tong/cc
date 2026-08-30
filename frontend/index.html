@@ -938,14 +938,12 @@ body::after {
         <ellipse cx="8" cy="5" rx="5" ry="2.5"/><path d="M3 5v6c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5V5"/><path d="M3 8c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5"/>
       </svg>
       记忆层级
-      <span class="nav-badge">4层</span>
     </div>
     <div class="nav-item" onclick="switchPage('events', this)">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
         <rect x="2" y="3" width="12" height="11" rx="1.5"/><path d="M5 1.5v3M11 1.5v3M2 7h12"/>
       </svg>
       计划事件
-      <span class="nav-badge">3</span>
     </div>
     <div class="nav-item" onclick="switchPage('log', this)">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
@@ -1207,45 +1205,45 @@ body::after {
     <div class="card">
       <div class="card-hd">
         <span class="card-hd-title">记忆层级</span>
-        <span class="card-hd-sub">上次压缩 2小时前</span>
+        <span class="card-hd-sub" id="memory-last-cp">—</span>
       </div>
       <div class="memory-grid">
         <div class="layer-tile active" onclick="selectLayer(this,'core')">
           <div class="layer-pip" style="background:var(--taupe);"></div>
           <div class="layer-name">核心层</div>
           <div class="layer-en">Core</div>
-          <div class="layer-count">永久 · 3 条</div>
+          <div class="layer-count" id="lc-core">—</div>
         </div>
         <div class="layer-tile" onclick="selectLayer(this,'mid')">
           <div class="layer-pip" style="background:var(--blue-dark);"></div>
           <div class="layer-name">中间层</div>
           <div class="layer-en">Midground</div>
-          <div class="layer-count">3个月 · 11 条</div>
+          <div class="layer-count" id="lc-mid">—</div>
         </div>
         <div class="layer-tile" onclick="selectLayer(this,'recent')">
           <div class="layer-pip" style="background:#6EC89A;"></div>
           <div class="layer-name">近期层</div>
           <div class="layer-en">Recent</div>
-          <div class="layer-count">3周 · 6 条</div>
+          <div class="layer-count" id="lc-recent">—</div>
         </div>
         <div class="layer-tile" onclick="selectLayer(this,'raw')">
           <div class="layer-pip" style="background:#E8A88A;"></div>
           <div class="layer-name">原始尾部</div>
           <div class="layer-en">Raw Tail</div>
-          <div class="layer-count">30 条原文</div>
+          <div class="layer-count" id="lc-raw">—</div>
         </div>
       </div>
       <div id="ld-core" class="layer-detail visible">
         <div id="ld-core-text" class="layer-detail-text"></div>
-        <div class="layer-footer"><span>version 12</span><span>最后更新：昨天</span><span>3 个条目</span></div>
+        <div class="layer-footer" id="lf-core"><span>暂无压缩记忆</span></div>
       </div>
       <div id="ld-mid" class="layer-detail">
         <div id="ld-mid-text" class="layer-detail-text"></div>
-        <div class="layer-footer"><span>coverage: 90天</span><span>11个压缩事件</span><span>上次压缩：2小时前</span></div>
+        <div class="layer-footer" id="lf-mid"><span>暂无压缩记忆</span></div>
       </div>
       <div id="ld-recent" class="layer-detail">
         <div id="ld-recent-text" class="layer-detail-text"></div>
-        <div class="layer-footer"><span>coverage: 21天</span><span>6个压缩事件</span></div>
+        <div class="layer-footer" id="lf-recent"><span>暂无压缩记忆</span></div>
       </div>
       <div id="ld-raw" class="layer-detail">
         <div class="raw-list" id="ld-raw-list">
@@ -1354,8 +1352,8 @@ body::after {
         </label>
         <div style="display:flex;gap:10px;align-items:center;">
           <button class="del-btn" onclick="doImport()" id="import-btn" style="flex:none;" disabled>导入</button>
-          <div id="import-status" style="font-size:12px;color:var(--taupe);"></div>
         </div>
+        <div id="import-status" style="display:none;padding:12px 14px;border-radius:8px;font-size:13px;line-height:1.6;word-break:break-all;"></div>
       </div>
     </div>
 
@@ -1649,15 +1647,38 @@ body::after {
   // ── 加载记忆层 ────────────────────────────────────────────────
   async function loadMemory() {
     const data = await apiFetch('/memories?layer=core');
+
+    // layer tile counts: populate from API when data exists, else show '暂无'
+    const hasCore = data && data.data && (data.data.constant || data.data.portrait);
+    const hasMid  = data && data.data && data.data.midground;
+    const hasRec  = data && data.data && data.data.recent;
+    const lcCore = document.getElementById('lc-core');
+    const lcMid  = document.getElementById('lc-mid');
+    const lcRec  = document.getElementById('lc-recent');
+    const lcRaw  = document.getElementById('lc-raw');
+    if (lcCore) lcCore.textContent = hasCore ? '永久' : '暂无';
+    if (lcMid)  lcMid.textContent  = hasMid  ? '已压缩' : '暂无';
+    if (lcRec)  lcRec.textContent  = hasRec  ? '已压缩' : '暂无';
+    if (lcRaw)  lcRaw.textContent  = '原始事件';
+
     if (!data || !data.data) return;
     const d = data.data;
     const coreEl = document.getElementById('ld-core-text');
     const midEl  = document.getElementById('ld-mid-text');
     const recEl  = document.getElementById('ld-recent-text');
-    if (coreEl && (d.constant || d.portrait))
-      coreEl.textContent = [d.constant, d.portrait].filter(Boolean).join(' ');
-    if (midEl && d.midground) midEl.textContent = d.midground;
-    if (recEl && d.recent)    recEl.textContent = d.recent;
+    const lfCore = document.getElementById('lf-core');
+    const lfMid  = document.getElementById('lf-mid');
+    const lfRec  = document.getElementById('lf-recent');
+
+    if (coreEl) coreEl.textContent = (d.constant || d.portrait)
+      ? [d.constant, d.portrait].filter(Boolean).join(' ')
+      : '';
+    if (midEl) midEl.textContent = d.midground || '';
+    if (recEl) recEl.textContent = d.recent    || '';
+
+    if (lfCore) lfCore.innerHTML = hasCore ? '<span>核心记忆已载入</span>' : '<span>暂无压缩记忆</span>';
+    if (lfMid)  lfMid.innerHTML  = hasMid  ? '<span>中间层已载入</span>'  : '<span>暂无压缩记忆</span>';
+    if (lfRec)  lfRec.innerHTML  = hasRec  ? '<span>近期层已载入</span>'  : '<span>暂无压缩记忆</span>';
   }
 
   // ── 加载事件日志 ─────────────────────────────────────────────
@@ -1719,16 +1740,24 @@ body::after {
     const status = document.getElementById('import-status');
     btn.disabled = true;
     let totalImported = 0, totalSkipped = 0, staleCompression = false, errors = [];
+
+    function showStatus(msg, color, bg) {
+      status.style.display = 'block';
+      status.textContent = msg;
+      status.style.color = color || 'var(--ink)';
+      status.style.background = bg || 'var(--cream)';
+      status.style.border = '1px solid var(--cream-border)';
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      status.textContent = `上传中… (${i+1}/${files.length}) ${file.name}`;
-      status.style.color = 'var(--taupe)';
+      showStatus(`上传中… (${i+1}/${files.length}) ${file.name}`, 'var(--taupe)', '');
       const fd = new FormData();
       fd.append('file', file);
       try {
         const res = await fetch(API + '/import/conversations', { method: 'POST', body: fd });
         const data = await res.json();
-        if (data.ok) {
+        if (res.ok && data.ok) {
           totalImported += data.imported;
           totalSkipped += (data.skipped || 0);
           if (data.stale_compression) staleCompression = true;
@@ -1740,20 +1769,22 @@ body::after {
       }
     }
     if (errors.length === 0) {
-      let msg = `✓ 导入成功 · ${totalImported} 条`;
-      if (totalSkipped > 0) msg += ` · 跳过重复 ${totalSkipped} 条`;
-      if (staleCompression) msg += ' · ⚠ 数据早于已压缩记忆，建议手动触发压缩';
-      status.textContent = msg;
-      status.style.color = staleCompression ? '#e67e22' : 'var(--blue-dark)';
+      let msg = `导入完成：${totalImported} 条已写入`;
+      if (totalSkipped > 0) msg += `，跳过重复 ${totalSkipped} 条`;
+      if (staleCompression) msg += '。\n注意：部分数据早于已压缩记忆，若需要请手动触发压缩。';
+      msg += '\n\n数据已写入全局日志，正在跳转…';
+      showStatus(msg, staleCompression ? '#b05a00' : 'var(--blue-dark)', staleCompression ? '#fff8ec' : 'var(--blue-light)');
       loadLog();
+      setTimeout(() => {
+        const logNav = document.querySelector('[onclick*="log"]');
+        if (logNav) logNav.click();
+      }, 1200);
     } else if (totalImported > 0) {
-      status.textContent = `部分成功 · ${totalImported} 条；失败: ${errors.join('；')}`;
-      status.style.color = '#e67e22';
+      showStatus(`部分成功：${totalImported} 条已写入，失败：\n${errors.join('\n')}`, '#b05a00', '#fff8ec');
       btn.disabled = false;
       loadLog();
     } else {
-      status.textContent = '导入失败：' + errors.join('；');
-      status.style.color = '#c0392b';
+      showStatus('导入失败：\n' + errors.join('\n'), '#c0392b', '#fff0f0');
       btn.disabled = false;
     }
   }
