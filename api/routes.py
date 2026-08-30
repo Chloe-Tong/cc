@@ -1,8 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional, List
 
 from api.app import event_log, cp_store, emotion, thoughts, inner_thoughts, observations
+from api.import_parser import detect_and_parse
+from cc.models import Event
 
 router = APIRouter()
 
@@ -116,6 +118,37 @@ def trigger_compression():
     if cp:
         return {"ok": True, "checkpoint_id": cp.id}
     return {"ok": False, "reason": "nothing new to compress"}
+
+
+# ── POST /import/conversations ───────────────────────────────────
+@router.post("/import/conversations")
+async def import_conversations(file: UploadFile = File(...)):
+    """上传 Claude 或 ChatGPT 导出的 conversations.json，写入事件日志。"""
+    if not file.filename.endswith(".json"):
+        raise HTTPException(400, "请上传 .json 文件")
+    raw = await file.read()
+    try:
+        events, fmt = detect_and_parse(raw)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    head = event_log.head_seq()
+    imported = 0
+    for ev in events:
+        e = Event(
+            seq=0,
+            actor=ev["actor"],
+            source="import",
+            scope="private",
+            audience=["*"],
+            content=ev["content"],
+            based_on_seq=head,
+            created_at=ev["ts"] if ev["ts"] > 0 else __import__("time").time(),
+        )
+        event_log.append(e)
+        imported += 1
+
+    return {"ok": True, "format": fmt, "imported": imported}
 
 
 def _emo(e) -> dict:
