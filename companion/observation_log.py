@@ -18,7 +18,7 @@ class Observation:
 
 
 class ObservationLog:
-    """林 records observations about the user from her own perspective."""
+    """AI 伴侣从自己的视角记录对用户的观察。"""
 
     def __init__(self, db_path: str | Path):
         self._db = str(db_path)

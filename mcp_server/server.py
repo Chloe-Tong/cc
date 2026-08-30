@@ -1,5 +1,5 @@
 """
-林的 MCP Server — 13 个工具，供 claude -p 在对话中调用。
+AI 伴侣的 MCP Server — 13 个工具，供 claude -p 在对话中调用。
 启动方式: python -m mcp_server.server
 MCP SDK >= 2.x (MCPServer)
 """
@@ -16,6 +16,7 @@ from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
 from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
+from companion.settings_store import SettingsStore
 
 # ── 数据路径 ────────────────────────────────────────────────────
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -29,9 +30,14 @@ emotion        = EmotionStore(DB)
 thoughts       = PendingThoughtStore(DB)   # 待说的话
 inner_thoughts = InnerThoughtStore(DB)     # 内心独白
 observations   = ObservationLog(DB)
+settings       = SettingsStore(DB)
+
+# 昵称来自记忆系统的设置表，而不是硬编码——启动时读一次，改名后需重启 server 生效
+NAME = settings.get_companion_name() or "AI 伴侣"
 
 # ── Server ──────────────────────────────────────────────────────
-app = MCPServer("lin-memory", description="林的记忆与情绪系统")
+# "lin-memory" 是 MCP 服务的注册标识符，可能被本机 MCP 配置引用，不随昵称变化
+app = MCPServer("lin-memory", description=f"{NAME}的记忆与情绪系统")
 
 
 def _emotion_dict(e) -> dict:
@@ -152,7 +158,7 @@ def get_working_context() -> dict:
 
 
 # ── 6. set_emotion_state ─────────────────────────────────────────
-@app.tool(description="更新林当前情绪状态")
+@app.tool(description=f"更新{NAME}当前情绪状态")
 def set_emotion_state(primary: str, intensity: float,
                       secondary: Optional[str] = None,
                       trigger: Optional[str] = None,
@@ -173,7 +179,7 @@ def get_emotion_history(hours: float = 24) -> dict:
 
 
 # ── 8. save_pending_thought ──────────────────────────────────────
-@app.tool(description="保存一条林打算说给用户的话（对话消息队列）")
+@app.tool(description=f"保存一条{NAME}打算说给用户的话（对话消息队列）")
 def save_pending_thought(content: str, priority: int = 1) -> dict:
     t = thoughts.save(content, priority=priority)
     return {"ok": True, "thought_id": t.id}
@@ -223,7 +229,7 @@ def get_inner_thoughts(visibility: Optional[str] = None,
 
 
 # ── 11. note_observation ─────────────────────────────────────────
-@app.tool(description="记录林对用户的一条观察")
+@app.tool(description=f"记录{NAME}对用户的一条观察")
 def note_observation(content: str,
                      category: str = "other") -> dict:
     obs = observations.note(content, category=category)

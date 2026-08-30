@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional, List
 
-from api.app import event_log, cp_store, emotion, thoughts, inner_thoughts, observations
+from api.app import event_log, cp_store, emotion, thoughts, inner_thoughts, observations, settings
 from api.import_parser import detect_and_parse
 from cc.event_log import content_fingerprint
 from cc.models import Event
@@ -27,6 +27,7 @@ def get_status():
         },
         "pending_thoughts_count": pending_count,
         "event_count": event_log.head_seq(),
+        "companion_name": settings.get_companion_name(),
     }
 
 
@@ -69,8 +70,26 @@ def get_memories(layer: str = "episodic", limit: int = 20, offset: int = 0):
         raise HTTPException(400, "layer must be core or episodic")
 
 
+# ── GET /settings ────────────────────────────────────────────────
+@router.get("/settings")
+def get_settings():
+    return {"companion_name": settings.get_companion_name()}
+
+
+class SettingsNameRequest(BaseModel):
+    name: str
+
+@router.put("/settings/name")
+def set_settings_name(req: SettingsNameRequest):
+    name = req.name.strip()
+    if not name:
+        raise HTTPException(400, "name 不能为空")
+    settings.set_companion_name(name)
+    return {"ok": True, "companion_name": name}
+
+
 # ── GET /thoughts ────────────────────────────────────────────────
-# 返回林打算说给用户的话（待说消息队列，未说出口的）
+# 返回 AI 伴侣打算说给用户的话（待说消息队列，未说出口的）
 @router.get("/thoughts")
 def get_thoughts():
     return {"thoughts": [
@@ -80,7 +99,7 @@ def get_thoughts():
 
 
 # ── GET /thoughts/inner ──────────────────────────────────────────
-# 返回林的内心独白（自言自语，非对话）
+# 返回 AI 伴侣的内心独白（自言自语，非对话）
 # visibility: "public"（展示）| "private"（仅计数，内容不返回）| 不传则两种都返
 @router.get("/thoughts/inner")
 def get_inner_thoughts(limit: int = 20):

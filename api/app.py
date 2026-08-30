@@ -8,6 +8,7 @@ from companion.emotion_store import EmotionStore
 from companion.pending_thoughts import PendingThoughtStore
 from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
+from companion.settings_store import SettingsStore
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -19,6 +20,7 @@ emotion       = EmotionStore(DB)
 thoughts      = PendingThoughtStore(DB)   # 待说的话（消息队列）
 inner_thoughts = InnerThoughtStore(DB)    # 内心独白（自言自语）
 observations  = ObservationLog(DB)
+settings      = SettingsStore(DB)         # 键值设置（如 AI 伴侣昵称）
 
 app = FastAPI(title="evermind")
 app.add_middleware(

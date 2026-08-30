@@ -895,7 +895,7 @@ body::after {
 <div class="sidebar">
   <div class="sb-head">
     <div class="sb-eyebrow">AI 伴侣</div>
-    <div class="sb-name" id="sb-name">林</div>
+    <div class="sb-name" id="sb-name"></div>
     <div class="sb-meta" id="sb-meta"></div>
     <div class="online-badge">
       <div class="dot"></div>
@@ -1192,7 +1192,7 @@ body::after {
         </div>
         <div id="thoughts-private" style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
           <div style="padding:9px 11px;border-radius:6px;background:var(--blue-light);border:1px solid var(--blue);font-size:11px;color:var(--blue-dark);font-weight:300;line-height:1.65;">
-            私密想法只有 <span class="cname">林</span> 自己知道，用于记录不希望你看到、但对情绪有影响的内容
+            私密想法只有 <span class="cname"></span> 自己知道，用于记录不希望你看到、但对情绪有影响的内容
           </div>
         </div>
       </div>
@@ -1316,7 +1316,7 @@ body::after {
       <!-- 说明栏 -->
       <div class="info-box" style="margin:0 0 0;">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--blue-dark)" stroke-width="1.4" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 6v4M6.5 4v.5"/></svg>
-        <span>勾选想删除的具体记忆条目，提交后 <span class="cname">林</span> 会收到通知——只有同意才会执行删除。</span>
+        <span>勾选想删除的具体记忆条目，提交后 <span class="cname"></span> 会收到通知——只有同意才会执行删除。</span>
       </div>
 
       <!-- 层级过滤标签 -->
@@ -1345,7 +1345,7 @@ body::after {
       <div style="padding:14px 16px;border-top:1px solid var(--cream-border);display:flex;gap:10px;align-items:flex-start;">
         <button class="del-btn" onclick="doDelete()" style="flex:none;">提交删除申请</button>
         <div class="response-box" id="del-resp" style="flex:1;margin:0;">
-          <div class="response-label"><div class="dot"></div><span class="cname">林</span> · 实时回应</div>
+          <div class="response-label"><div class="dot"></div><span class="cname"></span> · 实时回应</div>
           <div id="del-resp-text"></div>
         </div>
       </div>
@@ -1385,12 +1385,12 @@ body::after {
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--taupe);">AI 伴侣名字</label>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input id="setting-name" type="text" maxlength="20" placeholder="林"
+            <input id="setting-name" type="text" maxlength="20" placeholder="给 AI 伴侣起个名字"
               style="flex:1;padding:8px 12px;border-radius:7px;border:1px solid var(--cream-border);background:var(--cream);font-size:13px;color:var(--ink);font-family:inherit;outline:none;transition:border 0.15s;"
               onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--cream-border)'">
             <button onclick="saveSettings()" style="padding:8px 16px;border-radius:7px;border:none;background:var(--blue-dark);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">保存</button>
           </div>
-          <div style="font-size:11px;color:var(--taupe);">保存后全页面生效，存储在本地浏览器中。</div>
+          <div style="font-size:11px;color:var(--taupe);">保存后全页面生效，存储在记忆系统里，换设备/换浏览器也一致。</div>
         </div>
       </div>
     </div>
@@ -1402,7 +1402,7 @@ body::after {
 <script>
   const API = '';
 
-  // 说话人：导入的历史对话不是「林」说的，要按来源平台区分显示。
+  // 说话人：导入的历史对话不是 AI 伴侣自己说的，要按来源平台区分显示。
   // source 形如 import:claude / import:chatgpt；老数据只有 import，平台已不可考。
   const IMPORT_SENDERS = { 'import:claude': 'Claude', 'import:chatgpt': 'ChatGPT', 'import': '导入' };
 
@@ -1416,7 +1416,7 @@ body::after {
     const name = senderName(actor, source);
     if (actor === 'user') return '<span class="badge badge-blue">用户</span>';
     if (actor !== 'ai')   return '<span class="badge badge-taupe">系统</span>';
-    // 导入的用中性色，和「林」自己说的话区分开
+    // 导入的用中性色，和 AI 伴侣自己说的话区分开
     const cls = IMPORT_SENDERS[source] ? 'badge badge-taupe' : 'badge badge-green';
     return `<span class="${cls}">${escapeHtml(name)}</span>`;
   }
@@ -1430,8 +1430,9 @@ body::after {
   const titles = { emotion:'情绪 · 内心', memory:'记忆层级', events:'计划事件', log:'全局日志', manage:'管理' };
 
   // ── 伴侣名字 ──────────────────────────────────────────────────
+  // 记忆系统（后端 settings 表）是唯一真实来源；localStorage 只做首屏渲染前的缓存，避免闪烁。
   let companionName = (function() {
-    try { return localStorage.getItem('companion_name') || '林'; } catch(e) { return '林'; }
+    try { return localStorage.getItem('companion_name') || ''; } catch(e) { return ''; }
   })();
 
   function applyCompanionName() {
@@ -1442,10 +1443,26 @@ body::after {
     if (input) input.value = companionName;
   }
 
-  function saveSettings() {
+  async function loadCompanionName() {
+    const data = await apiFetch('/settings');
+    if (!data || !data.companion_name) return;
+    companionName = data.companion_name;
+    try { localStorage.setItem('companion_name', companionName); } catch(e) {}
+    applyCompanionName();
+  }
+
+  async function saveSettings() {
     const input = document.getElementById('setting-name');
     const v = input ? input.value.trim() : '';
     if (!v) return;
+    try {
+      const r = await fetch(API + '/settings/name', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: v }),
+      });
+      if (!r.ok) return;
+    } catch (e) { return; }
     companionName = v;
     try { localStorage.setItem('companion_name', v); } catch(e) {}
     applyCompanionName();
@@ -1808,6 +1825,7 @@ body::after {
   // ── 初始化 ────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
     applyCompanionName();
+    loadCompanionName();
     loadStatus();
     loadThoughts();
     loadMemory();

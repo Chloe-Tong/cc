@@ -18,7 +18,7 @@ class InnerThought:
 
 class InnerThoughtStore:
     """
-    林的内心独白——自言自语，不是写给用户的话。
+    AI 伴侣的内心独白——自言自语，不是写给用户的话。
     visibility="public"  : 在 dashboard 可见（但仍是独白，不是对话）
     visibility="private" : 完全私密，dashboard 只显示"私密想法"占位
     """
