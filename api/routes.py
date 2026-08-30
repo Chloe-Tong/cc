@@ -39,7 +39,7 @@ def get_emotion_history(hours: float = 24):
 
 # ── GET /memories ────────────────────────────────────────────────
 @router.get("/memories")
-def get_memories(layer: str = "episodic", limit: int = 20):
+def get_memories(layer: str = "episodic", limit: int = 20, offset: int = 0):
     if layer == "core":
         cp = cp_store.latest()
         if not cp:
@@ -51,11 +51,19 @@ def get_memories(layer: str = "episodic", limit: int = 20):
             "recent":    cp.layer_recent,
         }}
     elif layer == "episodic":
-        events = event_log.tail(limit)
-        return {"layer": "episodic", "events": [
-            {"seq": e.seq, "actor": e.actor, "content": e.content, "ts": e.created_at}
-            for e in events
-        ]}
+        limit = max(1, min(limit, 500))
+        offset = max(0, offset)
+        events = event_log.page(limit, offset)   # 最新的在前
+        return {
+            "layer": "episodic",
+            "events": [
+                {"seq": e.seq, "actor": e.actor, "content": e.content, "ts": e.created_at}
+                for e in events
+            ],
+            "total": event_log.count(),
+            "limit": limit,
+            "offset": offset,
+        }
     else:
         raise HTTPException(400, "layer must be core or episodic")
 

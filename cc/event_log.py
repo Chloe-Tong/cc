@@ -95,6 +95,20 @@ class GlobalEventLog:
                 keys.add((actor, content_fingerprint(content), int(ts // 60)))
         return keys
 
+    def page(self, limit: int, offset: int = 0) -> list[Event]:
+        """按 seq 倒序分页，offset=0 为最新一页。"""
+        with self._conn() as conn:
+            rows = conn.execute(
+                "SELECT * FROM events ORDER BY seq DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
+        return [self._row_to_event(r) for r in rows]
+
+    def count(self) -> int:
+        """事件总数。删除过事件后会小于 head_seq()，分页要用这个。"""
+        with self._conn() as conn:
+            return conn.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+
     def head_seq(self) -> int:
         with self._conn() as conn:
             row = conn.execute("SELECT MAX(seq) FROM events").fetchone()

@@ -1283,6 +1283,25 @@ body::after {
       <div id="log-tbody">
         <div id="log-empty" style="padding:28px 14px;text-align:center;font-size:12px;color:var(--taupe);">暂无记录</div>
       </div><!-- /log-tbody -->
+      <div id="log-pager" style="display:none;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--cream-border);flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="del-btn" id="log-first" onclick="gotoLogPage(0)" style="flex:none;padding:6px 10px;">« 最新</button>
+          <button class="del-btn" id="log-prev" onclick="gotoLogPage(_logPage - 1)" style="flex:none;padding:6px 12px;">上一页</button>
+          <button class="del-btn" id="log-next" onclick="gotoLogPage(_logPage + 1)" style="flex:none;padding:6px 12px;">下一页</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--taupe);">
+          <span id="log-pageinfo">—</span>
+          <label style="display:flex;align-items:center;gap:5px;">
+            每页
+            <select id="log-pagesize" onchange="changeLogPageSize(this.value)" style="padding:4px 6px;border:1px solid var(--cream-border);border-radius:6px;background:var(--cream);color:var(--ink);font-size:12px;">
+              <option value="20">20</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1382,6 +1401,13 @@ body::after {
 
 <script>
   const API = '';
+
+  // 导入的对话是任意文本，直接塞进 innerHTML 会破坏排版（含 < 的内容尤其明显）
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
   const titles = { emotion:'情绪 · 内心', memory:'记忆层级', events:'计划事件', log:'全局日志', manage:'管理' };
 
   // ── 伴侣名字 ──────────────────────────────────────────────────
@@ -1456,7 +1482,7 @@ body::after {
       list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--taupe);font-size:13px;">暂无记忆条目</div>';
       return;
     }
-    _delItems = data.events.slice().reverse();
+    _delItems = data.events;   // 接口已按最新在前返回
     _renderDelList();
   }
 
@@ -1487,7 +1513,7 @@ body::after {
       `<label class="del-row" style="display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-bottom:1px solid var(--cream-border);cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--cream-hover)'" onmouseout="this.style.background=''">
         <input type="checkbox" class="del-item-cb" data-seq="${e.seq}" ${_selectedSeqs.has(e.seq) ? 'checked' : ''}
           onchange="onDelCbChange(this)" style="accent-color:var(--blue-dark);margin-top:3px;cursor:pointer;flex-shrink:0;">
-        <span style="flex:1;font-size:13px;color:var(--ink);line-height:1.5;">${e.content.slice(0, 80)}${e.content.length > 80 ? '…' : ''}</span>
+        <span style="flex:1;font-size:13px;color:var(--ink);line-height:1.5;">${escapeHtml(e.content.slice(0, 80))}${e.content.length > 80 ? '…' : ''}</span>
         <span style="font-size:11px;color:${actorColor(e.actor)};flex-shrink:0;padding-top:2px;">${actorLabel(e.actor)}</span>
         <span style="font-size:10px;color:var(--taupe);flex-shrink:0;padding-top:3px;min-width:36px;text-align:right;">${tsLabel(e.ts)}</span>
       </label>`
@@ -1618,7 +1644,7 @@ body::after {
       if (publicItems.length > 0) {
         pubBox.innerHTML = publicItems.map(t =>
           `<div class="thought-item">
-            <div class="thought-text">${t.content}</div>
+            <div class="thought-text">${escapeHtml(t.content)}</div>
             <div class="thought-meta">
               <svg width="8" height="8" viewBox="0 0 8 8" fill="#6EC89A"><circle cx="4" cy="4" r="3.5"/></svg>
               公开 · ${tsLabel(t.ts)}
@@ -1682,34 +1708,86 @@ body::after {
   }
 
   // ── 加载事件日志 ─────────────────────────────────────────────
+  let _logPage = 0;
+  let _logPageSize = 50;
+  let _logTotal = 0;
+
+  function gotoLogPage(p) {
+    const maxPage = Math.max(0, Math.ceil(_logTotal / _logPageSize) - 1);
+    _logPage = Math.min(Math.max(0, p), maxPage);
+    loadLog();
+    const card = document.getElementById('log-tbody');
+    if (card) card.scrollIntoView({block: 'start', behavior: 'smooth'});
+  }
+
+  function changeLogPageSize(v) {
+    _logPageSize = parseInt(v, 10) || 50;
+    _logPage = 0;
+    loadLog();
+  }
+
   async function loadLog() {
-    const data = await apiFetch('/memories?layer=episodic&limit=20');
     const tbody = document.getElementById('log-tbody');
     if (!tbody) return;
+    const offset = _logPage * _logPageSize;
+    const data = await apiFetch(`/memories?layer=episodic&limit=${_logPageSize}&offset=${offset}`);
+    const pager = document.getElementById('log-pager');
+
     if (!data || !data.events || !data.events.length) {
+      // 翻过头了就退回最后一页，否则确实是空的
+      if (_logPage > 0 && data && data.total > 0) { gotoLogPage(Math.ceil(data.total / _logPageSize) - 1); return; }
       tbody.innerHTML = '<div id="log-empty" style="padding:28px 14px;text-align:center;font-size:12px;color:var(--taupe);">暂无记录</div>';
+      if (pager) pager.style.display = 'none';
       return;
     }
+
+    _logTotal = data.total != null ? data.total : data.events.length;
+
     const actorBadge = a => a === 'user'
       ? '<span class="badge badge-blue">用户</span>'
       : a === 'ai'
       ? `<span class="badge badge-green">${companionName}</span>`
       : '<span class="badge badge-taupe">系统</span>';
+    // ts 是 Unix 秒；导入的历史对话可能是几年前的，太久远就显示具体日期
     const tsLabel = ts => {
       if (!ts) return '';
-      const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 60000);
-      if (diff < 1) return '刚才';
-      if (diff < 60) return diff + ' 分前';
-      return Math.floor(diff / 60) + ' 小时前';
+      const mins = Math.floor((Date.now() / 1000 - ts) / 60);
+      if (mins < 1) return '刚才';
+      if (mins < 60) return mins + ' 分前';
+      if (mins < 1440) return Math.floor(mins / 60) + ' 小时前';
+      const d = new Date(ts * 1000);
+      const days = Math.floor(mins / 1440);
+      if (days < 30) return days + ' 天前';
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
-    tbody.innerHTML = data.events.slice().reverse().map(e =>
+
+    tbody.innerHTML = data.events.map(e =>   // 接口已按最新在前返回
       `<div class="log-row">
         <div class="log-seq">${e.seq}</div>
-        <div class="log-msg">${e.content.slice(0, 80)}</div>
+        <div class="log-msg">${escapeHtml(e.content.slice(0, 80))}</div>
         <div>${actorBadge(e.actor)}</div>
         <div class="log-ts">${tsLabel(e.ts)}</div>
       </div>`
     ).join('');
+
+    if (pager) {
+      const totalPages = Math.max(1, Math.ceil(_logTotal / _logPageSize));
+      const from = offset + 1, to = offset + data.events.length;
+      pager.style.display = 'flex';
+      document.getElementById('log-pageinfo').textContent =
+        `第 ${from}–${to} 条 / 共 ${_logTotal} 条 · 第 ${_logPage + 1}/${totalPages} 页`;
+      const atFirst = _logPage <= 0, atLast = _logPage >= totalPages - 1;
+      const setBtn = (id, disabled) => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        b.disabled = disabled;
+        b.style.opacity = disabled ? '0.4' : '1';
+        b.style.cursor = disabled ? 'default' : 'pointer';
+      };
+      setBtn('log-first', atFirst);
+      setBtn('log-prev', atFirst);
+      setBtn('log-next', atLast);
+    }
   }
 
   // ── 初始化 ────────────────────────────────────────────────────
@@ -1791,7 +1869,7 @@ body::after {
         ? '\n\n数据已写入全局日志，正在跳转…'
         : '\n\n没有新增内容（这些对话之前已经导入过了）。';
       showStatus(msg, staleCompression ? '#b05a00' : 'var(--blue-dark)', staleCompression ? '#fff8ec' : 'var(--blue-light)');
-      loadLog();
+      _logPage = 0; loadLog();   // 导入后回到最新一页
       if (totalImported > 0) {
         setTimeout(() => {
           const logNav = document.querySelector('[onclick*="log"]');
@@ -1803,7 +1881,7 @@ body::after {
     } else if (totalImported > 0) {
       showStatus(`部分成功：${totalImported} 条已写入，失败：\n${errors.join('\n')}`, '#b05a00', '#fff8ec');
       btn.disabled = false;
-      loadLog();
+      _logPage = 0; loadLog();   // 导入后回到最新一页
     } else {
       showStatus('导入失败：\n' + errors.join('\n'), '#c0392b', '#fff0f0');
       btn.disabled = false;
