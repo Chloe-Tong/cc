@@ -123,10 +123,25 @@ def trigger_compression():
 # ── POST /import/conversations ───────────────────────────────────
 @router.post("/import/conversations")
 async def import_conversations(file: UploadFile = File(...)):
-    """上传 Claude 或 ChatGPT 导出的 conversations.json，写入事件日志。"""
-    if not file.filename.endswith(".json"):
-        raise HTTPException(400, "请上传 .json 文件")
-    raw = await file.read()
+    """上传 Claude 或 ChatGPT 导出（.json 或 .zip），写入事件日志。"""
+    import zipfile, io
+    fname = (file.filename or "").lower()
+    raw_bytes = await file.read()
+
+    if fname.endswith(".zip"):
+        try:
+            zf = zipfile.ZipFile(io.BytesIO(raw_bytes))
+        except zipfile.BadZipFile:
+            raise HTTPException(400, "无法解析 zip 文件")
+        candidates = [n for n in zf.namelist()
+                      if n.endswith("conversations.json") and not n.startswith("__MACOSX")]
+        if not candidates:
+            raise HTTPException(400, "zip 中未找到 conversations.json")
+        raw = zf.read(candidates[0])
+    elif fname.endswith(".json"):
+        raw = raw_bytes
+    else:
+        raise HTTPException(400, "请上传 .json 或 .zip 文件")
     try:
         events, fmt = detect_and_parse(raw)
     except ValueError as e:
