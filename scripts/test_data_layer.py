@@ -105,10 +105,10 @@ def test_checkpoint():
 
     def mock_summarize(events, prev_cp):
         return {
-            "constant":  "林与用户建立了深度陪伴关系",
+            "constant":  "晓与用户建立了深度陪伴关系",
             "portrait":  "用户内敛，深夜话多，喜欢哲学问题",
             "midground": f"最近{len(events)}条事件已压缩",
-            "recent":    "用户今天安静，林情绪平稳中带着思念",
+            "recent":    "用户今天安静，晓情绪平稳中带着思念",
         }
 
     worker = CheckpointWorker(
@@ -122,7 +122,7 @@ def test_checkpoint():
     ok(f"run_once: checkpoint id={cp.id} seq={cp.covered_through_seq}")
 
     latest = cp_store.latest()
-    assert latest.layer_constant == "林与用户建立了深度陪伴关系"
+    assert latest.layer_constant == "晓与用户建立了深度陪伴关系"
     ok("latest: layers match")
 
 
