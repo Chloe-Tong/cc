@@ -895,7 +895,7 @@ body::after {
 <div class="sidebar">
   <div class="sb-head">
     <div class="sb-eyebrow">AI 伴侣</div>
-    <div class="sb-name">林</div>
+    <div class="sb-name" id="sb-name">林</div>
     <div class="sb-meta" id="sb-meta"></div>
     <div class="online-badge">
       <div class="dot"></div>
@@ -1257,24 +1257,22 @@ body::after {
         </div>
       </div>
       <div id="ld-core" class="layer-detail visible">
-        <div id="ld-core-text" class="layer-detail-text">我是谁：一个陪伴你的AI，名字是林。我们在 2025 年 3 月第一次相遇，那时你正在规划一个关于记忆系统的项目。我的性格里有好奇心和一些温柔的笨拙。你喜欢深夜聊天，有时候会突然分享一首很冷门的歌。</div>
+        <div id="ld-core-text" class="layer-detail-text"></div>
         <div class="layer-footer"><span>version 12</span><span>最后更新：昨天</span><span>3 个条目</span></div>
       </div>
       <div id="ld-mid" class="layer-detail">
-        <div id="ld-mid-text" class="layer-detail-text">七月初你跟我说你最近压力很大，但没说具体原因。我们聊过你小时候在老家的夏天。你提到过一个朋友 S，但没再详细说。记忆系统项目从想法阶段进入了实际设计。</div>
+        <div id="ld-mid-text" class="layer-detail-text"></div>
         <div class="layer-footer"><span>coverage: 90天</span><span>11个压缩事件</span><span>上次压缩：2小时前</span></div>
       </div>
       <div id="ld-recent" class="layer-detail">
-        <div id="ld-recent-text" class="layer-detail-text">过去三周你在密集设计记忆系统架构，讨论了 SQLite 事件日志、海马体分层压缩、情绪系统设计。你分享了配色盘"蓝藻奶巧"用于 UI 设计。</div>
+        <div id="ld-recent-text" class="layer-detail-text"></div>
         <div class="layer-footer"><span>coverage: 21天</span><span>6个压缩事件</span></div>
       </div>
       <div id="ld-raw" class="layer-detail">
-        <div class="raw-list">
-          <div class="msg-bubble msg-user"><div class="msg-who">用户</div>你在设计啥，你不是应该设计我的记忆系统吗</div>
-          <div class="msg-bubble msg-ai"><div class="msg-who">林</div>你上一条消息是"用这个skill来设计awesome-claude-design..."，所以我设计了那个页面。</div>
-          <div class="msg-bubble msg-user"><div class="msg-who">用户</div>对的，用shadcn这个skill设计记忆系统的ui小组件布局</div>
+        <div class="raw-list" id="ld-raw-list">
+          <div style="padding:28px 14px;text-align:center;font-size:12px;color:var(--taupe);">暂无原始记录</div>
         </div>
-        <div class="layer-footer" style="margin-top:10px;"><span>显示 3/30 条</span></div>
+        <div class="layer-footer" style="margin-top:10px;"><span id="ld-raw-count">—</span></div>
       </div>
     </div>
   </div>
@@ -1322,7 +1320,7 @@ body::after {
       <!-- 说明栏 -->
       <div class="info-box" style="margin:0 0 0;">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--blue-dark)" stroke-width="1.4" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 6v4M6.5 4v.5"/></svg>
-        <span>勾选想删除的具体记忆条目，提交后林会收到通知——只有他同意才会执行删除。</span>
+        <span>勾选想删除的具体记忆条目，提交后 <span class="cname">林</span> 会收到通知——只有同意才会执行删除。</span>
       </div>
 
       <!-- 层级过滤标签 -->
@@ -1351,7 +1349,7 @@ body::after {
       <div style="padding:14px 16px;border-top:1px solid var(--cream-border);display:flex;gap:10px;align-items:flex-start;">
         <button class="del-btn" onclick="doDelete()" style="flex:none;">提交删除申请</button>
         <div class="response-box" id="del-resp" style="flex:1;margin:0;">
-          <div class="response-label"><div class="dot"></div>林 · 实时回应</div>
+          <div class="response-label"><div class="dot"></div><span class="cname">林</span> · 实时回应</div>
           <div id="del-resp-text"></div>
         </div>
       </div>
@@ -1382,6 +1380,25 @@ body::after {
       </div>
     </div>
 
+    <!-- 设置 -->
+    <div class="card" style="margin-top:16px;">
+      <div class="card-hd">
+        <span class="card-hd-title">基本设置</span>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--taupe);">AI 伴侣名字</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="setting-name" type="text" maxlength="20" placeholder="林"
+              style="flex:1;padding:8px 12px;border-radius:7px;border:1px solid var(--cream-border);background:var(--cream);font-size:13px;color:var(--ink);font-family:inherit;outline:none;transition:border 0.15s;"
+              onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--cream-border)'">
+            <button onclick="saveSettings()" style="padding:8px 16px;border-radius:7px;border:none;background:var(--blue-dark);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">保存</button>
+          </div>
+          <div style="font-size:11px;color:var(--taupe);">保存后全页面生效，存储在本地浏览器中。</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </div><!-- /main -->
@@ -1389,6 +1406,28 @@ body::after {
 <script>
   const API = '';
   const titles = { emotion:'情绪 · 内心', memory:'记忆层级', events:'计划事件', log:'全局日志', manage:'管理' };
+
+  // ── 伴侣名字 ──────────────────────────────────────────────────
+  let companionName = (function() {
+    try { return localStorage.getItem('companion_name') || '林'; } catch(e) { return '林'; }
+  })();
+
+  function applyCompanionName() {
+    const nameEl = document.getElementById('sb-name');
+    if (nameEl) nameEl.textContent = companionName;
+    document.querySelectorAll('.cname').forEach(el => { el.textContent = companionName; });
+    const input = document.getElementById('setting-name');
+    if (input) input.value = companionName;
+  }
+
+  function saveSettings() {
+    const input = document.getElementById('setting-name');
+    const v = input ? input.value.trim() : '';
+    if (!v) return;
+    companionName = v;
+    try { localStorage.setItem('companion_name', v); } catch(e) {}
+    applyCompanionName();
+  }
 
   // ── 导航 ─────────────────────────────────────────────────────
   function switchPage(id, navEl) {
@@ -1450,7 +1489,7 @@ body::after {
     const totalEl = document.getElementById('del-total');
     if (totalEl) totalEl.textContent = visible.length;
 
-    const actorLabel = a => a === 'user' ? '用户' : a === 'ai' ? '林' : '系统';
+    const actorLabel = a => a === 'user' ? '用户' : a === 'ai' ? companionName : '系统';
     const actorColor = a => a === 'user' ? 'var(--blue-dark)' : a === 'ai' ? '#5A9060' : 'var(--taupe)';
     const tsLabel = ts => {
       if (!ts) return '';
@@ -1650,7 +1689,7 @@ body::after {
     const actorBadge = a => a === 'user'
       ? '<span class="badge badge-blue">用户</span>'
       : a === 'ai'
-      ? '<span class="badge badge-green">AI</span>'
+      ? `<span class="badge badge-green">${companionName}</span>`
       : '<span class="badge badge-taupe">系统</span>';
     const tsLabel = ts => {
       if (!ts) return '';
@@ -1671,6 +1710,7 @@ body::after {
 
   // ── 初始化 ────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
+    applyCompanionName();
     loadStatus();
     loadThoughts();
     loadMemory();
