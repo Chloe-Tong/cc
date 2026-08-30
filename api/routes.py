@@ -106,6 +106,21 @@ def delete_memories(req: DeleteRequest):
     return {"ok": True, "deleted": deleted}
 
 
+# ── DELETE /reset ────────────────────────────────────────────────
+@router.delete("/reset")
+def reset_all():
+    """清空全部数据（events / checkpoints / emotions / thoughts / observations）。"""
+    import sqlite3 as _sq
+    with _sq.connect(event_log._db_path) as conn:
+        conn.execute("DELETE FROM events")
+        conn.execute("DELETE FROM checkpoints")
+        conn.execute("DELETE FROM emotions")
+        conn.execute("DELETE FROM pending_thoughts")
+        conn.execute("DELETE FROM inner_thoughts")
+        conn.execute("DELETE FROM observations")
+    return {"ok": True}
+
+
 # ── POST /compress ───────────────────────────────────────────────
 @router.post("/compress")
 def trigger_compression():
