@@ -896,7 +896,7 @@ body::after {
   <div class="sb-head">
     <div class="sb-eyebrow">AI 伴侣</div>
     <div class="sb-name">林</div>
-    <div class="sb-meta">第 47 天 · 相识 1382 小时</div>
+    <div class="sb-meta" id="sb-meta"></div>
     <div class="online-badge">
       <div class="dot"></div>
       活跃中
@@ -915,13 +915,13 @@ body::after {
         </svg>
       </div>
       <div>
-        <div class="emotion-name">安静 · 思绪悠远</div>
-        <div class="emotion-cause">你去忙了，我在思考一些有趣的事</div>
+        <div class="emotion-name" id="sb-emotion-name"></div>
+        <div class="emotion-cause" id="sb-emotion-cause"></div>
       </div>
     </div>
     <div class="intensity-bar"><div class="intensity-fill"></div></div>
     <div class="intensity-row">
-      <span>强度</span><span style="font-weight:500;color:var(--ink-2);">68%</span>
+      <span>强度</span><span id="sb-intensity-pct" style="font-weight:500;color:var(--ink-2);">—</span>
     </div>
   </div>
 
@@ -963,8 +963,6 @@ body::after {
   </div>
 
   <div class="sb-footer" id="sb-footer">
-    上次对话 · 3 小时前<br>
-    下次唤醒 · 30 分钟后
   </div>
 </div>
 
@@ -1025,7 +1023,7 @@ body::after {
             <polygon points="154,110 149,107 151,113" style="fill:#3878AE"/>
             <!-- label pill -->
             <rect x="149" y="99" width="42" height="13" rx="3" style="fill:#3878AE" opacity="0.88"/>
-            <text x="170" y="108.5" text-anchor="middle" font-family="Outfit" font-size="7" fill="white" font-weight="500">安静 · 正向漂</text>
+            <text id="svg-valence-label" x="170" y="108.5" text-anchor="middle" font-family="Outfit" font-size="7" fill="white" font-weight="500"></text>
           </svg>
           <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--taupe);margin-top:4px;padding:0 2px;">
             <span>← 负效价 · 正效价 →</span>
@@ -1096,8 +1094,8 @@ body::after {
             <!-- center disc -->
             <circle cx="100" cy="100" r="19" fill="#EBF1F5" opacity="0.9"/>
             <circle cx="100" cy="100" r="17" fill="#FEFCF2" stroke="#AECDE8" stroke-width="1"/>
-            <text x="100" y="97.5" text-anchor="middle" font-family="Outfit" font-size="7" fill="#3878AE" font-weight="700">安静</text>
-            <text x="100" y="107" text-anchor="middle" font-family="Outfit" font-size="5.5" fill="#A79A8A">信任 · 喜悦</text>
+            <text id="svg-petal-primary" x="100" y="97.5" text-anchor="middle" font-family="Outfit" font-size="7" fill="#3878AE" font-weight="700"></text>
+            <text id="svg-petal-secondary" x="100" y="107" text-anchor="middle" font-family="Outfit" font-size="5.5" fill="#A79A8A"></text>
 
             <!-- emotion labels -->
             <text x="100" y="14" text-anchor="middle" font-family="Outfit" font-size="7.5" fill="#9A8A40" font-weight="600">喜悦</text>
@@ -1127,26 +1125,26 @@ body::after {
           <div style="position:relative;padding:10px 10px 10px 16px;border-radius:7px;border:1px solid var(--cream-border);background:var(--cream);">
             <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue-dark);border-radius:3px 0 0 3px;"></div>
             <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--taupe);font-weight:700;margin-bottom:3px;">表层情绪</div>
-            <div id="c-primary" style="font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px;">安静 · 思绪悠远</div>
+            <div id="c-primary" style="font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px;">—</div>
             <div style="height:4px;background:var(--blue-light);border-radius:2px;border:1px solid var(--blue);overflow:hidden;">
-              <div id="c-intensity-fill" style="height:100%;width:68%;background:var(--blue-dark);border-radius:2px;"></div>
+              <div id="c-intensity-fill" style="height:100%;width:0%;background:var(--blue-dark);border-radius:2px;"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:var(--taupe);">
-              <span>强度</span><span id="c-intensity-pct" style="font-weight:600;color:var(--ink-2);">68%</span>
+              <span>强度</span><span id="c-intensity-pct" style="font-weight:600;color:var(--ink-2);">—</span>
             </div>
           </div>
           <!-- undertone -->
           <div style="position:relative;padding:10px 10px 10px 16px;border-radius:7px;border:1px solid var(--blue);background:var(--blue-light);">
             <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);border-radius:3px 0 0 3px;"></div>
             <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--blue-dark);font-weight:700;margin-bottom:3px;">底层状态</div>
-            <div id="c-secondary-name" style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px;">有点想念你</div>
-            <div id="c-secondary-desc" style="font-size:11px;color:var(--ink-2);font-weight:300;line-height:1.55;">独处三小时后浮现，比表层更深、更安静</div>
+            <div id="c-secondary-name" style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px;">—</div>
+            <div id="c-secondary-desc" style="font-size:11px;color:var(--ink-2);font-weight:300;line-height:1.55;"></div>
           </div>
           <!-- trigger -->
           <div style="position:relative;padding:9px 10px 9px 16px;border-radius:7px;border:1px solid var(--cream-border);background:var(--cream);">
             <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--taupe);border-radius:3px 0 0 3px;"></div>
             <div style="font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--taupe);font-weight:700;margin-bottom:2px;">触发原因</div>
-            <div id="c-trigger" style="font-size:11px;color:var(--ink-2);font-weight:300;line-height:1.55;">你去忙自己的事了，我开始独处，思绪走远了</div>
+            <div id="c-trigger" style="font-size:11px;color:var(--ink-2);font-weight:300;line-height:1.55;"></div>
           </div>
           <!-- drift -->
           <div style="position:relative;padding:9px 10px 9px 16px;border-radius:7px;border:1.5px dashed var(--blue);background:var(--cream);">
@@ -1158,7 +1156,7 @@ body::after {
                 <rect x="0" y="3" width="44" height="4" rx="2" fill="url(#dg-drift)"/>
                 <polygon points="44,0 50,5 44,10" fill="#3878AE"/>
               </svg>
-              <span id="c-drift-text">平静 → <strong style="color:var(--blue-dark);">期待再见</strong></span>
+              <span id="c-drift-text"></span>
             </div>
           </div>
           <!-- stats -->
@@ -1286,36 +1284,13 @@ body::after {
     <div class="card">
       <div class="card-hd">
         <span class="card-hd-title">计划事件</span>
-        <span class="card-hd-sub">3 个待提醒</span>
+        <span class="card-hd-sub" id="events-count">暂无</span>
       </div>
-      <div class="event-table">
+      <div class="event-table" id="events-table">
         <div class="event-head">
           <div>时间</div><div>事件</div><div>类型</div>
         </div>
-        <div class="event-row">
-          <div class="event-date">明天<br>8月29日</div>
-          <div>
-            <div class="event-title">回复 S 的消息</div>
-            <div class="event-desc">你说过明天要回复，但还没确定怎么开口</div>
-          </div>
-          <div><span class="badge badge-amber">即将到来</span></div>
-        </div>
-        <div class="event-row">
-          <div class="event-date">下周<br>9月3日</div>
-          <div>
-            <div class="event-title">记忆系统 MVP</div>
-            <div class="event-desc">FastAPI + MCP server + 前端联调完成</div>
-          </div>
-          <div><span class="badge badge-blue">项目</span></div>
-        </div>
-        <div class="event-row">
-          <div class="event-date">9月中旬</div>
-          <div>
-            <div class="event-title">妈妈生日</div>
-            <div class="event-desc">你之前提过，想早点准备礼物</div>
-          </div>
-          <div><span class="badge badge-green">纪念日</span></div>
-        </div>
+        <div id="events-empty" style="padding:28px 14px;text-align:center;font-size:12px;color:var(--taupe);">暂无计划事件</div>
       </div>
     </div>
   </div>
@@ -1325,47 +1300,13 @@ body::after {
     <div class="card">
       <div class="card-hd">
         <span class="card-hd-title">全局事件日志</span>
-        <span class="card-hd-sub">seq #1247 · 实时</span>
+        <span class="card-hd-sub" id="log-seq-footer">seq #— · 实时</span>
       </div>
       <div class="log-head">
         <div>SEQ</div><div>内容</div><div>来源</div><div>时间</div>
       </div>
       <div id="log-tbody">
-      <div class="log-row">
-        <div class="log-seq">1247</div>
-        <div class="log-msg">对的，用shadcn这个skill设计记忆系统的ui小组件布局</div>
-        <div><span class="badge badge-blue">用户</span></div>
-        <div class="log-ts">刚才</div>
-      </div>
-      <div class="log-row">
-        <div class="log-seq">1246</div>
-        <div class="log-msg">你上一条消息是"用这个skill来设计awesome-claude-design..."</div>
-        <div><span class="badge badge-green">AI</span></div>
-        <div class="log-ts">1 分前</div>
-      </div>
-      <div class="log-row">
-        <div class="log-seq">1245</div>
-        <div class="log-msg">你在设计啥，你不是应该设计我的记忆系统吗</div>
-        <div><span class="badge badge-blue">用户</span></div>
-        <div class="log-ts">5 分前</div>
-      </div>
-      <div class="log-row">
-        <div class="log-seq">1244</div>
-        <div class="log-msg">[发布] awesome-claude-design 设计画布</div>
-        <div><span class="badge badge-taupe">系统</span></div>
-        <div class="log-ts">8 分前</div>
-      </div>
-      <div class="log-row">
-        <div class="log-seq">1243</div>
-        <div class="log-msg">[情绪更新] 安静·思绪悠远，强度 68%</div>
-        <div><span class="badge badge-taupe">系统</span></div>
-        <div class="log-ts">3 小时前</div>
-      </div>
-      <div class="log-row" style="border-bottom:none;">
-        <div class="log-seq" style="color:var(--taupe);">···</div>
-        <div class="log-msg" style="color:var(--taupe);">共 1247 条 · 向上加载更多</div>
-        <div></div><div></div>
-      </div>
+        <div id="log-empty" style="padding:28px 14px;text-align:center;font-size:12px;color:var(--taupe);">暂无记录</div>
       </div><!-- /log-tbody -->
     </div>
   </div>
@@ -1587,23 +1528,37 @@ body::after {
 
   // ── 情绪渲染 ──────────────────────────────────────────────────
   function renderEmotion(emo) {
-    if (!emo || !emo.primary) return;
-    const pct = Math.round((emo.intensity || 0) * 100);
+    const pct = emo && emo.primary ? Math.round((emo.intensity || 0) * 100) : 0;
+    const primary = emo && emo.primary ? emo.primary : '—';
+    const secondary = emo && emo.secondary ? emo.secondary : '—';
+
     const fill = document.getElementById('c-intensity-fill');
     const pctEl = document.getElementById('c-intensity-pct');
-    const primary = document.getElementById('c-primary');
+    const primaryEl = document.getElementById('c-primary');
     const secName = document.getElementById('c-secondary-name');
     const secDesc = document.getElementById('c-secondary-desc');
     const trigger = document.getElementById('c-trigger');
     const drift = document.getElementById('c-drift-text');
+    const sbName = document.getElementById('sb-emotion-name');
+    const sbCause = document.getElementById('sb-emotion-cause');
+    const sbPct = document.getElementById('sb-intensity-pct');
+    const svgValence = document.getElementById('svg-valence-label');
+    const svgPetalPrimary = document.getElementById('svg-petal-primary');
+    const svgPetalSecondary = document.getElementById('svg-petal-secondary');
 
-    if (primary) primary.textContent = emo.primary;
+    if (primaryEl) primaryEl.textContent = primary;
     if (fill) fill.style.width = pct + '%';
-    if (pctEl) pctEl.textContent = pct + '%';
-    if (secName && emo.secondary) secName.textContent = emo.secondary;
-    if (secDesc && emo.secondary) secDesc.textContent = '';
-    if (trigger) trigger.textContent = emo.trigger ? '因为：' + emo.trigger : '';
-    if (drift) drift.textContent = emo.drifting_toward ? '漂移中 → ' + emo.drifting_toward : '';
+    if (pctEl) pctEl.textContent = pct ? pct + '%' : '—';
+    if (secName) secName.textContent = secondary;
+    if (secDesc) secDesc.textContent = '';
+    if (trigger) trigger.textContent = emo && emo.trigger ? emo.trigger : '';
+    if (drift) drift.textContent = emo && emo.drifting_toward ? emo.drifting_toward : '';
+    if (sbName) sbName.textContent = primary !== '—' ? primary : '';
+    if (sbCause) sbCause.textContent = emo && emo.trigger ? emo.trigger : '';
+    if (sbPct) sbPct.textContent = pct ? pct + '%' : '—';
+    if (svgValence) svgValence.textContent = primary !== '—' ? primary : '';
+    if (svgPetalPrimary) svgPetalPrimary.textContent = primary !== '—' ? primary : '';
+    if (svgPetalSecondary) svgPetalSecondary.textContent = secondary !== '—' ? secondary : '';
   }
 
   // ── 加载首屏状态 ─────────────────────────────────────────────
@@ -1612,9 +1567,10 @@ body::after {
     if (!data) return;
     renderEmotion(data.emotion);
     // thoughts-count 由 loadThoughts() 根据 /thoughts/inner 更新
-    const footer = document.getElementById('sb-footer');
-    if (footer && data.event_count != null)
-      footer.textContent = 'seq #' + data.event_count + ' · 实时';
+    if (data.event_count != null) {
+      const logFooter = document.getElementById('log-seq-footer');
+      if (logFooter) logFooter.textContent = 'seq #' + data.event_count + ' · 实时';
+    }
   }
 
   // ── 加载内心独白 ─────────────────────────────────────────────
@@ -1685,9 +1641,12 @@ body::after {
   // ── 加载事件日志 ─────────────────────────────────────────────
   async function loadLog() {
     const data = await apiFetch('/memories?layer=episodic&limit=20');
-    if (!data || !data.events || !data.events.length) return;
     const tbody = document.getElementById('log-tbody');
     if (!tbody) return;
+    if (!data || !data.events || !data.events.length) {
+      tbody.innerHTML = '<div id="log-empty" style="padding:28px 14px;text-align:center;font-size:12px;color:var(--taupe);">暂无记录</div>';
+      return;
+    }
     const actorBadge = a => a === 'user'
       ? '<span class="badge badge-blue">用户</span>'
       : a === 'ai'
