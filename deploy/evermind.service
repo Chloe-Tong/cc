@@ -1,5 +1,5 @@
 [Unit]
-Description=Lin Memory API
+Description=evermind
 After=network.target
 
 [Service]

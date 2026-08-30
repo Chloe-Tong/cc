@@ -19,7 +19,7 @@ from companion.inner_thoughts import InnerThoughtStore
 from companion.observation_log import ObservationLog
 from cc.models import Event
 
-TEST_DB = "/tmp/lin_runner_test.db"
+TEST_DB = "/tmp/evermind_runner_test.db"
 if os.path.exists(TEST_DB):
     os.remove(TEST_DB)
 
@@ -51,7 +51,7 @@ obs.note("深夜话比白天多", category="preference")
 head = el.head_seq()
 el.append(Event(0, "user", "chat", "private", ["*"], "你在吗", head))
 head = el.head_seq()
-el.append(Event(0, "ai",   "lin",  "private", ["*"], "一直在", head))
+el.append(Event(0, "ai",   "evermind",  "private", ["*"], "一直在", head))
 
 # 写一个假 checkpoint（不走 claude 压缩）
 from cc.checkpoint import CheckpointWorker

@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
-DB = str(DATA_DIR / "lin.db")
+DB = str(DATA_DIR / "evermind.db")
 
 _last_activity: float = time.time()
 SESSION_IDLE_SECONDS = 30 * 60   # 30 分钟无消息视为 session 结束

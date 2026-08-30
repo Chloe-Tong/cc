@@ -10,11 +10,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # 指向测试 DB
-os.environ["LIN_DB_OVERRIDE"] = "/tmp/lin_mcp_test.db"
+os.environ["EVERMIND_DB_OVERRIDE"] = "/tmp/evermind_mcp_test.db"
 
 # 先把测试 DB 路径打进 server 模块（在 import 前设置）
 import mcp_server.server as srv
-TEST_DB = "/tmp/lin_mcp_test.db"
+TEST_DB = "/tmp/evermind_mcp_test.db"
 if os.path.exists(TEST_DB):
     os.remove(TEST_DB)
 

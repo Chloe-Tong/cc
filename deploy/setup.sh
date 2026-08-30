@@ -29,12 +29,12 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
 echo "=== 5. systemd 服务 ==="
-sudo cp "$REPO_DIR/deploy/lin.service" /etc/systemd/system/lin.service
+sudo cp "$REPO_DIR/deploy/evermind.service" /etc/systemd/system/evermind.service
 sudo systemctl daemon-reload
-sudo systemctl enable lin
-sudo systemctl restart lin
+sudo systemctl enable evermind
+sudo systemctl restart evermind
 
 echo ""
 echo "=== 完成 ==="
 echo "访问: https://$DOMAIN"
-sudo systemctl status lin --no-pager
+sudo systemctl status evermind --no-pager

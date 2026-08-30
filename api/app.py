@@ -11,7 +11,7 @@ from companion.observation_log import ObservationLog
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
-DB = str(DATA_DIR / "lin.db")
+DB = str(DATA_DIR / "evermind.db")
 
 event_log     = GlobalEventLog(DB)
 cp_store      = CheckpointStore(DB)

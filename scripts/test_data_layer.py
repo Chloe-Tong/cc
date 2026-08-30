@@ -27,7 +27,7 @@ def test_events():
     log = GlobalEventLog(DB)
 
     e1 = log.append(Event(0, "user", "chat", "private", ["*"], "今天心情怎么样？", 0))
-    e2 = log.append(Event(0, "ai",   "lin",  "private", ["*"], "有点想你，安静的那种。", e1.seq))
+    e2 = log.append(Event(0, "ai",   "evermind",  "private", ["*"], "有点想你，安静的那种。", e1.seq))
 
     assert e1.seq > 0
     assert e2.seq == e1.seq + 1

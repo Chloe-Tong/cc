@@ -21,7 +21,7 @@ from companion.observation_log import ObservationLog
 DATA_DIR = Path(__file__).parent.parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
-DB = str(DATA_DIR / "lin.db")
+DB = str(DATA_DIR / "evermind.db")
 
 event_log      = GlobalEventLog(DB)
 cp_store       = CheckpointStore(DB)
@@ -106,7 +106,7 @@ def write_episodic(content: str, importance: int = 1,
     head = event_log.head_seq()
     text = f"[{emotion_tag}] {content}" if emotion_tag else content
     event = Event(
-        seq=0, actor="ai", source="lin",
+        seq=0, actor="ai", source="evermind",
         scope="private", audience=["*"],
         content=text, based_on_seq=head,
     )
@@ -119,7 +119,7 @@ def write_episodic(content: str, importance: int = 1,
 def update_core(category: str, content: str) -> dict:
     head = event_log.head_seq()
     event = Event(
-        seq=0, actor="ai", source="lin",
+        seq=0, actor="ai", source="evermind",
         scope="private", audience=["*"],
         content=f"[CORE:{category.upper()}] {content}",
         based_on_seq=head,

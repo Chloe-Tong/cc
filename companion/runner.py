@@ -139,13 +139,13 @@ def _mcp_config(server_path: str) -> str:
     import tempfile, os
     config = {
         "mcpServers": {
-            "lin-memory": {
+            "evermind": {
                 "command": "python",
                 "args": [server_path],
             }
         }
     }
-    fd, path = tempfile.mkstemp(suffix=".json", prefix="lin_mcp_")
+    fd, path = tempfile.mkstemp(suffix=".json", prefix="evermind_mcp_")
     with os.fdopen(fd, "w") as f:
         json.dump(config, f)
     return path
