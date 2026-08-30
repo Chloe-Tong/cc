@@ -1735,7 +1735,7 @@ body::after {
     const btn = document.getElementById('import-btn');
     const status = document.getElementById('import-status');
     btn.disabled = true;
-    let totalImported = 0, errors = [];
+    let totalImported = 0, totalSkipped = 0, staleCompression = false, errors = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       status.textContent = `上传中… (${i+1}/${files.length}) ${file.name}`;
@@ -1747,6 +1747,8 @@ body::after {
         const data = await res.json();
         if (data.ok) {
           totalImported += data.imported;
+          totalSkipped += (data.skipped || 0);
+          if (data.stale_compression) staleCompression = true;
         } else {
           errors.push(`${file.name}: ${data.detail || '失败'}`);
         }
@@ -1755,8 +1757,11 @@ body::after {
       }
     }
     if (errors.length === 0) {
-      status.textContent = `✓ 全部导入成功 · ${totalImported} 条记录`;
-      status.style.color = 'var(--blue-dark)';
+      let msg = `✓ 导入成功 · ${totalImported} 条`;
+      if (totalSkipped > 0) msg += ` · 跳过重复 ${totalSkipped} 条`;
+      if (staleCompression) msg += ' · ⚠ 数据早于已压缩记忆，建议手动触发压缩';
+      status.textContent = msg;
+      status.style.color = staleCompression ? '#e67e22' : 'var(--blue-dark)';
       loadLog();
     } else if (totalImported > 0) {
       status.textContent = `部分成功 · ${totalImported} 条；失败: ${errors.join('；')}`;

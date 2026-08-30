@@ -147,9 +147,29 @@ async def import_conversations(file: UploadFile = File(...)):
     except ValueError as e:
         raise HTTPException(400, str(e))
 
+    import sqlite3 as _sqlite3, time as _time
+
     head = event_log.head_seq()
     imported = 0
+    skipped = 0
+    earliest_ts = None
+
+    # 预加载已有事件的 (actor, content, created_at) 用于去重
+    def _is_duplicate(actor: str, content: str, ts: float) -> bool:
+        with _sqlite3.connect(event_log._db_path) as conn:
+            row = conn.execute(
+                """SELECT 1 FROM events
+                   WHERE actor=? AND content=? AND ABS(created_at - ?) < 60
+                   LIMIT 1""",
+                (actor, content, ts),
+            ).fetchone()
+        return row is not None
+
     for ev in events:
+        ts = ev["ts"] if ev["ts"] > 0 else _time.time()
+        if _is_duplicate(ev["actor"], ev["content"], ts):
+            skipped += 1
+            continue
         e = Event(
             seq=0,
             actor=ev["actor"],
@@ -158,12 +178,31 @@ async def import_conversations(file: UploadFile = File(...)):
             audience=["*"],
             content=ev["content"],
             based_on_seq=head,
-            created_at=ev["ts"] if ev["ts"] > 0 else __import__("time").time(),
+            created_at=ts,
         )
         event_log.append(e)
         imported += 1
+        if earliest_ts is None or ts < earliest_ts:
+            earliest_ts = ts
 
-    return {"ok": True, "format": fmt, "imported": imported}
+    # 检测冲突：导入数据是否早于已压缩记忆
+    stale_compression = False
+    cp = cp_store.latest()
+    if cp and earliest_ts is not None and imported > 0:
+        # 找到压缩覆盖截止的事件时间戳
+        compressed_events = event_log.range(0, cp.covered_through_seq)
+        if compressed_events:
+            compressed_cutoff_ts = compressed_events[-1].created_at
+            if earliest_ts < compressed_cutoff_ts:
+                stale_compression = True
+
+    return {
+        "ok": True,
+        "format": fmt,
+        "imported": imported,
+        "skipped": skipped,
+        "stale_compression": stale_compression,
+    }
 
 
 def _emo(e) -> dict:
