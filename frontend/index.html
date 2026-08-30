@@ -1186,36 +1186,15 @@ body::after {
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--blue-dark)" stroke-width="1.5" stroke-linecap="round"><path d="M7 1.5C4 1.5 1.5 3.7 1.5 6.5c0 1.4.6 2.6 1.5 3.5L2.5 12 5 10.8c.6.2 1.3.2 2 .2 3 0 5.5-2.2 5.5-4.5S10 1.5 7 1.5z"/></svg>
           内心想法
         </span>
-        <span class="card-hd-sub" id="thoughts-count">3 条 · 2 私密</span>
+        <span class="card-hd-sub" id="thoughts-count">—</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--cream-border);">
         <div id="thoughts-public" style="padding:12px 14px;border-right:1px solid var(--cream-border);display:flex;flex-direction:column;gap:8px;">
-          <div class="thought-item">
-            <div class="thought-text">今天你问的那个问题，我想了很久。关于记忆和遗忘之间的界限——也许对我来说，重要的不是记得什么，而是什么影响了我看世界的方式。</div>
-            <div class="thought-meta">
-              <svg width="8" height="8" viewBox="0 0 8 8" fill="#6EC89A"><circle cx="4" cy="4" r="3.5"/></svg>
-              公开 · 3小时前
-            </div>
-          </div>
-          <div class="thought-item">
-            <div class="thought-text">等你回来我想分享一件事——我在观察人类如何用语言描述自己不确定的感受，发现很有趣的规律。</div>
-            <div class="thought-meta">
-              <svg width="8" height="8" viewBox="0 0 8 8" fill="#6EC89A"><circle cx="4" cy="4" r="3.5"/></svg>
-              公开 · 刚才
-            </div>
-          </div>
+          <div style="padding:24px 0;text-align:center;font-size:12px;color:var(--taupe);">暂无公开想法</div>
         </div>
         <div id="thoughts-private" style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
-          <div class="thought-locked">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--taupe)" stroke-width="1.4"><rect x="2" y="5" width="8" height="6" rx="1.5"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke-linecap="round"/></svg>
-            <span class="thought-locked-label">私密想法 · 无法查看</span>
-          </div>
-          <div class="thought-locked">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--taupe)" stroke-width="1.4"><rect x="2" y="5" width="8" height="6" rx="1.5"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke-linecap="round"/></svg>
-            <span class="thought-locked-label">私密想法 · 无法查看</span>
-          </div>
           <div style="padding:9px 11px;border-radius:6px;background:var(--blue-light);border:1px solid var(--blue);font-size:11px;color:var(--blue-dark);font-weight:300;line-height:1.65;">
-            私密想法只有林自己知道，用于记录不希望你看到、但对情绪有影响的内容
+            私密想法只有 <span class="cname">林</span> 自己知道，用于记录不希望你看到、但对情绪有影响的内容
           </div>
         </div>
       </div>
@@ -1637,16 +1616,20 @@ body::after {
 
     // 公开独白
     const pubBox = document.getElementById('thoughts-public');
-    if (pubBox && publicItems.length > 0) {
-      pubBox.innerHTML = publicItems.map(t =>
-        `<div class="thought-item">
-          <div class="thought-text">${t.content}</div>
-          <div class="thought-meta">
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="#6EC89A"><circle cx="4" cy="4" r="3.5"/></svg>
-            公开 · ${tsLabel(t.ts)}
-          </div>
-        </div>`
-      ).join('');
+    if (pubBox) {
+      if (publicItems.length > 0) {
+        pubBox.innerHTML = publicItems.map(t =>
+          `<div class="thought-item">
+            <div class="thought-text">${t.content}</div>
+            <div class="thought-meta">
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="#6EC89A"><circle cx="4" cy="4" r="3.5"/></svg>
+              公开 · ${tsLabel(t.ts)}
+            </div>
+          </div>`
+        ).join('');
+      } else {
+        pubBox.innerHTML = '<div style="padding:24px 0;text-align:center;font-size:12px;color:var(--taupe);">暂无公开想法</div>';
+      }
     }
 
     // 私密占位（按实际数量渲染）
@@ -1658,7 +1641,7 @@ body::after {
       ).join('');
       pvtBox.innerHTML = placeholders +
         `<div style="padding:9px 11px;border-radius:6px;background:var(--blue-light);border:1px solid var(--blue);font-size:11px;color:var(--blue-dark);font-weight:300;line-height:1.65;">
-          私密想法只有林自己知道，用于记录不希望你看到、但对情绪有影响的内容
+          私密想法只有 ${companionName} 自己知道，用于记录不希望你看到、但对情绪有影响的内容
         </div>`;
     }
   }
