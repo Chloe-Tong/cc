@@ -1402,6 +1402,25 @@ body::after {
 <script>
   const API = '';
 
+  // 说话人：导入的历史对话不是「林」说的，要按来源平台区分显示。
+  // source 形如 import:claude / import:chatgpt；老数据只有 import，平台已不可考。
+  const IMPORT_SENDERS = { 'import:claude': 'Claude', 'import:chatgpt': 'ChatGPT', 'import': '导入' };
+
+  function senderName(actor, source) {
+    if (actor === 'user') return '用户';
+    if (actor !== 'ai')    return '系统';
+    return IMPORT_SENDERS[source] || companionName;
+  }
+
+  function senderBadge(actor, source) {
+    const name = senderName(actor, source);
+    if (actor === 'user') return '<span class="badge badge-blue">用户</span>';
+    if (actor !== 'ai')   return '<span class="badge badge-taupe">系统</span>';
+    // 导入的用中性色，和「林」自己说的话区分开
+    const cls = IMPORT_SENDERS[source] ? 'badge badge-taupe' : 'badge badge-green';
+    return `<span class="${cls}">${escapeHtml(name)}</span>`;
+  }
+
   // 导入的对话是任意文本，直接塞进 innerHTML 会破坏排版（含 < 的内容尤其明显）
   function escapeHtml(s) {
     return String(s == null ? '' : s)
@@ -1492,8 +1511,9 @@ body::after {
     const totalEl = document.getElementById('del-total');
     if (totalEl) totalEl.textContent = visible.length;
 
-    const actorLabel = a => a === 'user' ? '用户' : a === 'ai' ? companionName : '系统';
-    const actorColor = a => a === 'user' ? 'var(--blue-dark)' : a === 'ai' ? '#5A9060' : 'var(--taupe)';
+    const actorColor = (a, src) => a === 'user' ? 'var(--blue-dark)'
+      : a === 'ai' ? (IMPORT_SENDERS[src] ? 'var(--taupe)' : '#5A9060')
+      : 'var(--taupe)';
     const tsLabel = ts => {
       if (!ts) return '';
       const d = Math.floor((_NOW_S() - ts) / _DAY);
@@ -1514,7 +1534,7 @@ body::after {
         <input type="checkbox" class="del-item-cb" data-seq="${e.seq}" ${_selectedSeqs.has(e.seq) ? 'checked' : ''}
           onchange="onDelCbChange(this)" style="accent-color:var(--blue-dark);margin-top:3px;cursor:pointer;flex-shrink:0;">
         <span style="flex:1;font-size:13px;color:var(--ink);line-height:1.5;">${escapeHtml(e.content.slice(0, 80))}${e.content.length > 80 ? '…' : ''}</span>
-        <span style="font-size:11px;color:${actorColor(e.actor)};flex-shrink:0;padding-top:2px;">${actorLabel(e.actor)}</span>
+        <span style="font-size:11px;color:${actorColor(e.actor, e.source)};flex-shrink:0;padding-top:2px;">${escapeHtml(senderName(e.actor, e.source))}</span>
         <span style="font-size:10px;color:var(--taupe);flex-shrink:0;padding-top:3px;min-width:36px;text-align:right;">${tsLabel(e.ts)}</span>
       </label>`
     ).join('');
@@ -1743,11 +1763,6 @@ body::after {
 
     _logTotal = data.total != null ? data.total : data.events.length;
 
-    const actorBadge = a => a === 'user'
-      ? '<span class="badge badge-blue">用户</span>'
-      : a === 'ai'
-      ? `<span class="badge badge-green">${companionName}</span>`
-      : '<span class="badge badge-taupe">系统</span>';
     // ts 是 Unix 秒；导入的历史对话可能是几年前的，太久远就显示具体日期
     const tsLabel = ts => {
       if (!ts) return '';
@@ -1765,7 +1780,7 @@ body::after {
       `<div class="log-row">
         <div class="log-seq">${e.seq}</div>
         <div class="log-msg">${escapeHtml(e.content.slice(0, 80))}</div>
-        <div>${actorBadge(e.actor)}</div>
+        <div>${senderBadge(e.actor, e.source)}</div>
         <div class="log-ts">${tsLabel(e.ts)}</div>
       </div>`
     ).join('');

@@ -57,7 +57,8 @@ def get_memories(layer: str = "episodic", limit: int = 20, offset: int = 0):
         return {
             "layer": "episodic",
             "events": [
-                {"seq": e.seq, "actor": e.actor, "content": e.content, "ts": e.created_at}
+                {"seq": e.seq, "actor": e.actor, "source": e.source,
+                 "content": e.content, "ts": e.created_at}
                 for e in events
             ],
             "total": event_log.count(),
@@ -196,7 +197,7 @@ async def import_conversations(file: UploadFile = File(...)):
         to_write.append(Event(
             seq=0,
             actor=ev["actor"],
-            source="import",
+            source=f"import:{fmt}",   # 记下是从哪个平台导入的，用于区分说话人
             scope="private",
             audience=["*"],
             content=ev["content"],
