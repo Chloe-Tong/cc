@@ -1,0 +1,11 @@
+[Unit]
+Description=evermind 数据库备份到私有 git 仓库
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/cc/scripts/backup_to_git.py
+# 备份失败不该拖垮别的东西，但要在 journal 里留下记录
+StandardOutput=journal
+StandardError=journal

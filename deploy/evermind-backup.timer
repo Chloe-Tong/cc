@@ -1,0 +1,12 @@
+[Unit]
+Description=每天备份一次 evermind 数据库
+
+[Timer]
+OnCalendar=daily
+# 关机错过的备份，开机后补跑
+Persistent=true
+# 错开整点，避免和别的定时任务撞在一起
+RandomizedDelaySec=30m
+
+[Install]
+WantedBy=timers.target
