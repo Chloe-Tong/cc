@@ -20,7 +20,7 @@ thoughts      = PendingThoughtStore(DB)   # 待说的话（消息队列）
 inner_thoughts = InnerThoughtStore(DB)    # 内心独白（自言自语）
 observations  = ObservationLog(DB)
 
-app = FastAPI(title="林 Memory API")
+app = FastAPI(title="evermind")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
