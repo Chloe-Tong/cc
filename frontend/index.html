@@ -1415,7 +1415,6 @@ body::after {
         </div>
       </div>
     </div>
-    </div>
 
     <!-- 导入记忆 -->
     <div class="card" style="margin-top:16px;">
@@ -1426,14 +1425,14 @@ body::after {
 
       <div class="info-box" style="margin:0 0 0;">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="var(--blue-dark)" stroke-width="1.4" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 6v4M6.5 4v.5"/></svg>
-        <span>上传 Claude 或 ChatGPT 导出的 <code style="font-size:11px;background:rgba(174,205,232,0.3);padding:1px 5px;border-radius:3px;">conversations.json</code>，对话记录会写入林的记忆日志。</span>
+        <span>上传 Claude 或 ChatGPT 导出的对话文件，支持多选批量导入。</span>
       </div>
 
       <div style="padding:16px;display:flex;flex-direction:column;gap:12px;">
         <label id="import-drop" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:28px 16px;border:1.5px dashed var(--blue);border-radius:10px;cursor:pointer;color:var(--taupe);font-size:13px;transition:background 0.15s;" onmouseover="this.style.background='rgba(174,205,232,0.2)'" onmouseout="this.style.background=''">
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--blue-dark)" stroke-width="1.5" stroke-linecap="round"><path d="M9 12V4M5 8l4-4 4 4"/><path d="M3 14h12"/></svg>
-          <span id="import-label">选择或拖入 conversations.json</span>
-          <input type="file" id="import-file" accept=".json" style="display:none;" onchange="onImportFileChange(this)">
+          <span id="import-label">选择文件（可多选）</span>
+          <input type="file" id="import-file" multiple style="display:none;" onchange="onImportFileChange(this)">
         </label>
         <div style="display:flex;gap:10px;align-items:center;">
           <button class="del-btn" onclick="doImport()" id="import-btn" style="flex:none;" disabled>导入</button>
@@ -1721,38 +1720,51 @@ body::after {
 
   // ── 导入记忆 ─────────────────────────────────────────────────
   function onImportFileChange(input) {
-    const file = input.files[0];
-    if (!file) return;
-    document.getElementById('import-label').textContent = file.name;
+    const files = input.files;
+    if (!files.length) return;
+    document.getElementById('import-label').textContent =
+      files.length === 1 ? files[0].name : `已选 ${files.length} 个文件`;
     document.getElementById('import-btn').disabled = false;
     document.getElementById('import-status').textContent = '';
   }
 
   async function doImport() {
     const input = document.getElementById('import-file');
-    const file = input.files[0];
-    if (!file) return;
+    const files = Array.from(input.files);
+    if (!files.length) return;
     const btn = document.getElementById('import-btn');
     const status = document.getElementById('import-status');
     btn.disabled = true;
-    status.textContent = '上传中…';
-    status.style.color = 'var(--taupe)';
-    const fd = new FormData();
-    fd.append('file', file);
-    try {
-      const res = await fetch(API + '/import/conversations', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (data.ok) {
-        status.textContent = `✓ 导入成功 · ${data.format === 'claude' ? 'Claude' : 'ChatGPT'} · ${data.imported} 条记录`;
-        status.style.color = 'var(--blue-dark)';
-        loadLog();
-      } else {
-        status.textContent = '导入失败：' + (data.detail || JSON.stringify(data));
-        status.style.color = '#c0392b';
-        btn.disabled = false;
+    let totalImported = 0, errors = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      status.textContent = `上传中… (${i+1}/${files.length}) ${file.name}`;
+      status.style.color = 'var(--taupe)';
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const res = await fetch(API + '/import/conversations', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) {
+          totalImported += data.imported;
+        } else {
+          errors.push(`${file.name}: ${data.detail || '失败'}`);
+        }
+      } catch(e) {
+        errors.push(`${file.name}: ${e.message}`);
       }
-    } catch(e) {
-      status.textContent = '请求出错：' + e.message;
+    }
+    if (errors.length === 0) {
+      status.textContent = `✓ 全部导入成功 · ${totalImported} 条记录`;
+      status.style.color = 'var(--blue-dark)';
+      loadLog();
+    } else if (totalImported > 0) {
+      status.textContent = `部分成功 · ${totalImported} 条；失败: ${errors.join('；')}`;
+      status.style.color = '#e67e22';
+      btn.disabled = false;
+      loadLog();
+    } else {
+      status.textContent = '导入失败：' + errors.join('；');
       status.style.color = '#c0392b';
       btn.disabled = false;
     }
